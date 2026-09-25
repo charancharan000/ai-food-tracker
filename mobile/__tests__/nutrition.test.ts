@@ -17,7 +17,6 @@ describe("Frontend Nutrition Calculations", () => {
   };
 
   test("exact proportional scaling when weight changes 300g -> 450g", () => {
-    // Expected: 600 * (450 / 300) = 900 kcal
     const updated = scaleFoodItemNutrition(sampleItem, 450, 1.0);
     expect(updated.estimated_weight_g).toBe(450);
     expect(updated.calories).toBe(900);

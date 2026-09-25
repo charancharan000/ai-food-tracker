@@ -3,7 +3,6 @@ from httpx import AsyncClient
 
 @pytest.mark.asyncio
 async def test_dashboard_today_calculation(client: AsyncClient, auth_headers: dict):
-    # Log a meal
     meal_payload = {
         "meal_type": "Breakfast",
         "food_items": [
@@ -20,10 +19,8 @@ async def test_dashboard_today_calculation(client: AsyncClient, auth_headers: di
     }
     await client.post("/api/v1/meals", headers=auth_headers, json=meal_payload)
 
-    # Log water
     await client.post("/api/v1/water", headers=auth_headers, json={"amount_ml": 500})
 
-    # Fetch dashboard
     response = await client.get("/api/v1/dashboard/today", headers=auth_headers)
     assert response.status_code == 200
     data = response.json()

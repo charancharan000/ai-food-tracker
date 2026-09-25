@@ -23,12 +23,7 @@ A full-stack mobile application that tracks meals, calories, and macronutrients 
 ```bash
 cd backend
 python -m venv venv
-
-# Windows
-.\venv\Scripts\activate
-# macOS/Linux
 source venv/bin/activate
-
 pip install -r requirements.txt
 cp .env.example .env
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
@@ -64,13 +59,8 @@ AI_MODEL=gemini-2.0-flash
 ## Testing
 
 ```bash
-# Run backend tests
-cd backend
-pytest
-
-# Run mobile tests
-cd mobile
-npm test
+pytest backend/tests
+npm test --prefix mobile
 ```
 
 ## License

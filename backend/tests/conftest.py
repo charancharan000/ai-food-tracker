@@ -7,13 +7,12 @@ from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from PIL import Image
 
-import app.models  # ensure models loaded
+import app.models
 from app.main import app as fastapi_app
 from app.db.session import get_db
 from app.models.base import Base
 from app.core.config import settings
 
-# Test database: SQLite in-memory
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 test_engine = create_async_engine(
@@ -64,7 +63,6 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
 
 @pytest_asyncio.fixture
 async def auth_headers(client: AsyncClient) -> dict:
-    # Register and login a default test user
     reg_payload = {
         "name": "Alex Nutritionist",
         "email": "alex.test@example.com",

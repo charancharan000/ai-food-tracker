@@ -7,8 +7,6 @@ from app.services.nutrition_calc import (
 )
 
 def test_exact_proportional_weight_scaling():
-    # Prompt requirement test:
-    # original_weight = 300g, original_calories = 600, new_weight = 450g -> 900 kcal
     res = scale_nutrition_by_weight(
         original_weight_g=300.0,
         new_weight_g=450.0,
@@ -56,7 +54,6 @@ def test_calculate_meal_totals():
     assert totals["fat_g"] == 20.1
 
 def test_calculate_daily_calorie_and_macro_targets():
-    # Male, 28 years, 75kg, 178cm, moderate activity, maintain
     targets = calculate_daily_calorie_and_macro_targets(
         age=28,
         gender="male",

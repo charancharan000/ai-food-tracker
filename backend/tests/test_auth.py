@@ -39,14 +39,12 @@ async def test_register_duplicate_email(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_login_success(client: AsyncClient):
-    # Register first
     await client.post("/api/v1/auth/register", json={
         "name": "Login User",
         "email": "loginuser@example.com",
         "password": "CorrectPassword123"
     })
 
-    # Now login
     response = await client.post("/api/v1/auth/login", json={
         "email": "loginuser@example.com",
         "password": "CorrectPassword123"

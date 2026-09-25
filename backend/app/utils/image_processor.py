@@ -30,7 +30,6 @@ def validate_and_process_image(
     except Exception as e:
         raise BadRequestException("Unable to decode uploaded image file. Please provide a valid photo.")
 
-    # Convert RGBA / P to RGB if saving to JPEG
     if image.mode in ("RGBA", "LA", "P"):
         rgb_image = Image.new("RGB", image.size, (255, 255, 255))
         if image.mode == "P":
@@ -42,7 +41,6 @@ def validate_and_process_image(
 
     orig_width, orig_height = image.size
 
-    # Resize if larger than max_dimension
     if orig_width > max_dimension or orig_height > max_dimension:
         image.thumbnail((max_dimension, max_dimension), Image.Resampling.LANCZOS)
 

@@ -1,6 +1,5 @@
 from app.db.session import async_engine
 from app.models.base import Base
-# Import all models so metadata knows about them
 import app.models
 
 async def init_db() -> None:
