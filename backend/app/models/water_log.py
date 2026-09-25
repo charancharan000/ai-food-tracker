@@ -14,9 +14,8 @@ class WaterLog(Base):
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     
     date: Mapped[date] = mapped_column(Date, default=lambda: datetime.now(timezone.utc).date(), index=True)
-    amount_ml: Mapped[int] = mapped_column(Integer, nullable=False)  # e.g., 250, 500
+    amount_ml: Mapped[int] = mapped_column(Integer, nullable=False)
     
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
-    # Relationships
     user: Mapped["User"] = relationship("User", back_populates="water_logs")

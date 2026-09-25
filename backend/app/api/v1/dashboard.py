@@ -28,7 +28,6 @@ async def get_dashboard_today(
 ):
     today = datetime.now(timezone.utc).date()
 
-    # 1. Fetch today's meals
     meals_result = await db.execute(
         select(Meal)
         .where(and_(Meal.user_id == current_user.id, Meal.meal_date == today))
@@ -37,14 +36,12 @@ async def get_dashboard_today(
     )
     today_meals = meals_result.scalars().all()
 
-    # 2. Fetch today's water logs
     water_result = await db.execute(
         select(func.coalesce(func.sum(WaterLog.amount_ml), 0))
         .where(and_(WaterLog.user_id == current_user.id, WaterLog.date == today))
     )
     water_consumed = int(water_result.scalar() or 0)
 
-    # 3. Sum up macros and calories
     total_calories = sum(m.total_calories for m in today_meals)
     total_protein = sum(m.total_protein for m in today_meals)
     total_carbs = sum(m.total_carbs for m in today_meals)
@@ -69,7 +66,6 @@ async def get_dashboard_today(
     water_target = current_user.daily_water_target_ml or 2500
     water_percentage = min(100.0, round((water_consumed / water_target) * 100, 1)) if water_target > 0 else 0.0
 
-    # 4. Group meals by type: Breakfast, Lunch, Snack, Dinner
     standard_types = ["Breakfast", "Lunch", "Snack", "Dinner"]
     meals_by_type_dict: Dict[str, MealsByType] = {}
     for st in standard_types:
@@ -128,11 +124,10 @@ async def get_dashboard_summary(
     elif timeframe == "month":
         start_date = today - timedelta(days=29)
         end_date = today
-    else:  # week default
+    else:
         start_date = today - timedelta(days=6)
         end_date = today
 
-    # Query all meals in range
     result = await db.execute(
         select(Meal)
         .where(
@@ -146,7 +141,6 @@ async def get_dashboard_summary(
     )
     meals = result.scalars().all()
 
-    # Aggregate by day
     days_count = (end_date - start_date).days + 1
     daily_map = {}
     for i in range(days_count):

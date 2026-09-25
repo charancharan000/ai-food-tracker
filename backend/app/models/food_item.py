@@ -25,5 +25,4 @@ class FoodItem(Base):
     sodium_mg: Mapped[float] = mapped_column(Float, default=0.0)
     confidence: Mapped[float] = mapped_column(Float, default=0.8)
 
-    # Relationships
     meal: Mapped["Meal"] = relationship("Meal", back_populates="food_items")

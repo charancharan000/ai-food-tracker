@@ -14,7 +14,7 @@ class Meal(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     
-    meal_type: Mapped[str] = mapped_column(String(50), nullable=False)  # Breakfast, Lunch, Snack, Dinner
+    meal_type: Mapped[str] = mapped_column(String(50), nullable=False)
     meal_date: Mapped[date] = mapped_column(Date, default=lambda: datetime.now(timezone.utc).date(), index=True)
     
     total_calories: Mapped[float] = mapped_column(Float, default=0.0)
@@ -30,6 +30,5 @@ class Meal(Base):
     
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
-    # Relationships
     user: Mapped["User"] = relationship("User", back_populates="meals")
     food_items: Mapped[List["FoodItem"]] = relationship("FoodItem", back_populates="meal", cascade="all, delete-orphan", lazy="selectin")

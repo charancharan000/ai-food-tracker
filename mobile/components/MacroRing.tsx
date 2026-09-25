@@ -20,7 +20,6 @@ export const MacroRing: React.FC<MacroRingProps> = ({
 
   const radius = (size - strokeWidth - 8) / 2;
   const circumference = 2 * Math.PI * radius;
-
   const targetPercentage = target > 0 ? Math.min(1, Math.max(0, consumed / target)) : 0;
   const [animatedPct, setAnimatedPct] = useState(0);
   const animValue = useRef(new Animated.Value(0)).current;
@@ -58,7 +57,6 @@ export const MacroRing: React.FC<MacroRingProps> = ({
           </LinearGradient>
         </Defs>
 
-        {/* Ambient Halo Glow */}
         <Circle
           cx={size / 2}
           cy={size / 2}
@@ -69,7 +67,6 @@ export const MacroRing: React.FC<MacroRingProps> = ({
           fill="transparent"
         />
 
-        {/* Background track circle */}
         <Circle
           cx={size / 2}
           cy={size / 2}
@@ -80,7 +77,6 @@ export const MacroRing: React.FC<MacroRingProps> = ({
           fill="transparent"
         />
 
-        {/* Animated Progress circle */}
         <Circle
           cx={size / 2}
           cy={size / 2}
@@ -95,7 +91,6 @@ export const MacroRing: React.FC<MacroRingProps> = ({
         />
       </Svg>
 
-      {/* Central content */}
       <View style={styles.centerContent}>
         <Text style={[styles.calorieValue, { color: colors.text }]}>
           {Math.round(consumed).toLocaleString()}

@@ -53,7 +53,6 @@ export const PortionEditor: React.FC<PortionEditorProps> = ({
         FINE-TUNE PORTION
       </Text>
 
-      {/* Preset Pills */}
       <View style={styles.presetsRow}>
         {PORTION_PRESETS.map((preset) => {
           const baseWeight = originalItem.estimated_weight_g || 100;
@@ -94,7 +93,6 @@ export const PortionEditor: React.FC<PortionEditorProps> = ({
         })}
       </View>
 
-      {/* Grams stepper: [-] 350 g [+] */}
       <View style={styles.stepperSection}>
         <Text style={[styles.controlLabel, { color: colors.text }]}>Weight (grams)</Text>
         <View style={styles.stepperRow}>
@@ -122,7 +120,6 @@ export const PortionEditor: React.FC<PortionEditorProps> = ({
         </View>
       </View>
 
-      {/* Servings stepper */}
       <View style={styles.stepperSection}>
         <Text style={[styles.controlLabel, { color: colors.text }]}>Servings</Text>
         <View style={styles.stepperRow}>

@@ -4,7 +4,6 @@ from httpx import AsyncClient
 
 @pytest.mark.asyncio
 async def test_meal_crud_flow(client: AsyncClient, auth_headers: dict):
-    # 1. Create meal with multiple items
     meal_payload = {
         "meal_type": "Lunch",
         "notes": "Healthy balanced lunch after workout",
@@ -44,18 +43,15 @@ async def test_meal_crud_flow(client: AsyncClient, auth_headers: dict):
     assert meal_data["total_calories"] == 685.0
     assert len(meal_data["food_items"]) == 2
 
-    # 2. Get today's meals
     today_res = await client.get("/api/v1/meals/today", headers=auth_headers)
     assert today_res.status_code == 200
     today_meals = today_res.json()
     assert any(m["id"] == meal_id for m in today_meals)
 
-    # 3. Get meal by ID
     get_res = await client.get(f"/api/v1/meals/{meal_id}", headers=auth_headers)
     assert get_res.status_code == 200
     assert get_res.json()["id"] == meal_id
 
-    # 4. Update meal (e.g. adjust portion/item)
     update_payload = {
         "meal_type": "Dinner",
         "notes": "Updated to dinner",
@@ -82,10 +78,8 @@ async def test_meal_crud_flow(client: AsyncClient, auth_headers: dict):
     assert len(updated_data["food_items"]) == 1
     assert updated_data["total_calories"] == 797.1
 
-    # 5. Delete meal
     del_res = await client.delete(f"/api/v1/meals/{meal_id}", headers=auth_headers)
     assert del_res.status_code == 204
 
-    # 6. Verify 404 after deletion
     check_res = await client.get(f"/api/v1/meals/{meal_id}", headers=auth_headers)
     assert check_res.status_code == 404

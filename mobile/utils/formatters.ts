@@ -34,11 +34,11 @@ export function formatTime(dateTimeStr: string): string {
 }
 
 export const MACRO_COLORS = {
-  calories: "#10B981", // Emerald
-  protein: "#6366F1",  // Indigo
-  carbs: "#F59E0B",    // Amber
-  fat: "#EC4899",      // Rose
-  water: "#06B6D4",    // Cyan
+  calories: "#10B981",
+  protein: "#6366F1",
+  carbs: "#F59E0B",
+  fat: "#EC4899",
+  water: "#06B6D4",
   backgroundDark: "#0B0F19",
   cardDark: "#151C2C",
   borderDark: "#232F48",

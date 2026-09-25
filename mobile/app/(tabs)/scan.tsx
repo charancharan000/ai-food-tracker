@@ -28,13 +28,11 @@ export default function FoodScannerScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ preferredMealType?: string }>();
 
-  // Scanner Steps: 'idle' | 'preview' | 'result'
   const [step, setStep] = useState<"idle" | "preview" | "result">("idle");
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Analysis result state
   const [detectedItems, setDetectedItems] = useState<FoodItemDetection[]>([]);
   const [originalItems, setOriginalItems] = useState<FoodItemDetection[]>([]);
   const [notes, setNotes] = useState<string>("");
@@ -68,7 +66,6 @@ export default function FoodScannerScreen() {
     }
   }, [step]);
 
-  // 1. Take photo via camera
   const handleTakePhoto = async () => {
     try {
       const permission = await ImagePicker.requestCameraPermissionsAsync();
@@ -98,7 +95,6 @@ export default function FoodScannerScreen() {
     }
   };
 
-  // 2. Upload from gallery
   const handlePickFromGallery = async () => {
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -128,7 +124,6 @@ export default function FoodScannerScreen() {
     }
   };
 
-  // 3. Analyze food image via backend AI service
   const handleAnalyzeFood = async () => {
     if (!selectedImageUri) return;
 
@@ -146,7 +141,7 @@ export default function FoodScannerScreen() {
       }
 
       setDetectedItems(analysis.food_items);
-      setOriginalItems(JSON.parse(JSON.stringify(analysis.food_items))); // deep clone
+      setOriginalItems(JSON.parse(JSON.stringify(analysis.food_items)));
       setNotes(analysis.notes || "");
       setStep("result");
     } catch (e: any) {
@@ -159,14 +154,12 @@ export default function FoodScannerScreen() {
     }
   };
 
-  // 4. Update food item portion (proportional calculation)
   const handleUpdateItem = (index: number, updatedItem: FoodItemDetection) => {
     const next = [...detectedItems];
     next[index] = updatedItem;
     setDetectedItems(next);
   };
 
-  // 5. Remove food item
   const handleRemoveItem = (index: number) => {
     if (detectedItems.length === 1) {
       Alert.alert(
@@ -186,7 +179,6 @@ export default function FoodScannerScreen() {
     setOriginalItems(nextOriginal);
   };
 
-  // 6. Reset scanner
   const handleResetScanner = () => {
     setSelectedImageUri(null);
     setDetectedItems([]);
@@ -195,7 +187,6 @@ export default function FoodScannerScreen() {
     setStep("idle");
   };
 
-  // 7. Save meal to database
   const handleSaveMeal = async () => {
     if (detectedItems.length === 0) return;
 
@@ -246,7 +237,6 @@ export default function FoodScannerScreen() {
 
   const calculatedTotals = calculateTotals(detectedItems);
 
-  // Compute average confidence to display badge / warning
   const avgConfidence = detectedItems.length > 0
     ? Math.round((detectedItems.reduce((acc, i) => acc + (i.confidence || 0.8), 0) / detectedItems.length) * 100)
     : 85;
@@ -255,7 +245,6 @@ export default function FoodScannerScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={["top"]}>
-      {/* Header */}
       <View style={styles.topBar}>
         {step !== "idle" ? (
           <TouchableOpacity onPress={handleResetScanner} style={styles.headerIconBtn}>
@@ -265,18 +254,16 @@ export default function FoodScannerScreen() {
           <View style={{ width: 36 }} />
         )}
         <Text style={[styles.headerTitle, { color: colors.text }]}>
-          {step === "idle" && "Scan Food with AI"}
-          {step === "preview" && "Preview Meal Photo"}
-          {step === "result" && "AI Nutrition Results"}
+          {step === "idle" && "Scan Meal"}
+          {step === "preview" && "Preview Photo"}
+          {step === "result" && "Meal Details"}
         </Text>
         <View style={{ width: 36 }} />
       </View>
 
-      {/* Loading Modal */}
       <AnalysisLoadingModal visible={isAnalyzing} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Error Notification */}
         {errorMessage && (
           <View style={[styles.errorCard, { backgroundColor: `${colors.danger}15`, borderColor: colors.danger }]}>
             <Ionicons name="alert-circle" size={22} color={colors.danger} />
@@ -284,17 +271,14 @@ export default function FoodScannerScreen() {
           </View>
         )}
 
-        {/* STEP 1: IDLE / CAPTURE SELECTION */}
         {step === "idle" && (
           <View style={styles.idleContainer}>
-            {/* Viewfinder Mockup */}
             <View style={[styles.viewfinder, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={[styles.scannerCorner, styles.cornerTL, { borderColor: colors.primary }]} />
               <View style={[styles.scannerCorner, styles.cornerTR, { borderColor: colors.primary }]} />
               <View style={[styles.scannerCorner, styles.cornerBL, { borderColor: colors.primary }]} />
               <View style={[styles.scannerCorner, styles.cornerBR, { borderColor: colors.primary }]} />
 
-              {/* High-tech scanning laser line */}
               <Animated.View
                 style={[
                   styles.laserLine,
@@ -310,14 +294,13 @@ export default function FoodScannerScreen() {
                 <Ionicons name="scan-outline" size={54} color={colors.primary} />
               </View>
               <Text style={[styles.scanPrompt, { color: colors.text }]}>
-                Capture or Upload Food Photo
+                Take or upload photo
               </Text>
               <Text style={[styles.scanHelp, { color: colors.textSecondary }]}>
-                Point your camera directly at the plate or meal for high-accuracy recognition
+                Hold camera directly over the plate or bowl for best results
               </Text>
             </View>
 
-            {/* Action Buttons */}
             <View style={styles.actionButtonsCol}>
               <TouchableOpacity
                 style={[styles.primaryActionBtn, { backgroundColor: colors.primary }]}
@@ -338,27 +321,25 @@ export default function FoodScannerScreen() {
               >
                 <Ionicons name="images-outline" size={22} color={colors.primary} />
                 <Text style={[styles.secondaryActionBtnText, { color: colors.text }]}>
-                  Upload From Gallery
+                  Upload from Gallery
                 </Text>
               </TouchableOpacity>
             </View>
 
-            {/* Smart Tips */}
             <View style={[styles.tipsBox, { backgroundColor: colors.surfaceLight, borderColor: colors.border }]}>
               <View style={styles.tipsHeader}>
                 <Ionicons name="bulb-outline" size={18} color={colors.amber} />
-                <Text style={[styles.tipsTitle, { color: colors.text }]}>AI Nutrition Tips</Text>
+                <Text style={[styles.tipsTitle, { color: colors.text }]}>Tips</Text>
               </View>
               <Text style={[styles.tipsText, { color: colors.textSecondary }]}>
                 • Good lighting and visible portions improve accuracy{"\n"}
-                • Mixed plates with rice, dal, and proteins are automatically recognized separately{"\n"}
+                • Mixed plates with multiple items are recognized separately{"\n"}
                 • You can fine-tune portion weights before saving
               </Text>
             </View>
           </View>
         )}
 
-        {/* STEP 2: PREVIEW PHOTO */}
         {step === "preview" && selectedImageUri && (
           <View style={styles.previewContainer}>
             <View style={[styles.imageCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -366,10 +347,10 @@ export default function FoodScannerScreen() {
             </View>
 
             <Text style={[styles.previewHeading, { color: colors.text }]}>
-              Ready for AI Vision Analysis
+              Ready to analyze
             </Text>
             <Text style={[styles.previewSubheading, { color: colors.textSecondary }]}>
-              Our vision AI model will identify food items, estimate grams, and compute macro breakdown.
+              We'll identify food items, estimate portion weight, and calculate macros.
             </Text>
 
             <View style={styles.previewActions}>
@@ -396,15 +377,13 @@ export default function FoodScannerScreen() {
           </View>
         )}
 
-        {/* STEP 3: RESULT & PORTION EDITING */}
         {step === "result" && (
           <View style={styles.resultContainer}>
-            {/* Header Result Card */}
             <View style={[styles.resultBanner, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.resultTopRow}>
                 <View>
                   <Text style={[styles.resultEyebrow, { color: colors.textSecondary }]}>
-                    FOOD DETECTED ({detectedItems.length} {detectedItems.length === 1 ? "item" : "items"})
+                    ITEMS DETECTED ({detectedItems.length})
                   </Text>
                   <Text style={[styles.resultTotalCals, { color: colors.primary }]}>
                     {Math.round(calculatedTotals.calories)}{" "}
@@ -432,21 +411,18 @@ export default function FoodScannerScreen() {
                       { color: avgConfidence >= 80 ? colors.emerald : colors.amber },
                     ]}
                   >
-                    {avgConfidence}% Confidence
+                    {avgConfidence}% match
                   </Text>
                 </View>
               </View>
 
-              {/* Total Nutrition Bar */}
               <NutritionSummaryBar total={calculatedTotals} />
 
-              {/* Disclaimer */}
               <Text style={[styles.disclaimer, { color: colors.textMuted }]}>
-                Estimated values — actual nutrition may vary. Tap options on any item to adjust portion.
+                Estimated values. Tap options on any item to adjust weight or servings.
               </Text>
             </View>
 
-            {/* Meal Type Selection */}
             <View style={styles.mealTypeSection}>
               <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>LOG AS MEAL TYPE</Text>
               <View style={styles.mealTypesRow}>
@@ -477,7 +453,6 @@ export default function FoodScannerScreen() {
               </View>
             </View>
 
-            {/* Detected Food Items List */}
             <Text style={[styles.sectionTitle, { color: colors.textSecondary, marginTop: 10 }]}>
               DETECTED ITEMS & PORTIONS
             </Text>
@@ -493,7 +468,6 @@ export default function FoodScannerScreen() {
               />
             ))}
 
-            {/* Notes if any */}
             {notes ? (
               <View style={[styles.notesCard, { backgroundColor: colors.surfaceLight, borderColor: colors.border }]}>
                 <Ionicons name="information-circle-outline" size={18} color={colors.primary} />
@@ -501,7 +475,6 @@ export default function FoodScannerScreen() {
               </View>
             ) : null}
 
-            {/* Save Button */}
             <TouchableOpacity
               style={[styles.saveMealBtn, { backgroundColor: colors.primary }]}
               onPress={handleSaveMeal}

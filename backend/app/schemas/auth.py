@@ -7,11 +7,11 @@ class UserRegister(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=6, max_length=100)
     age: Optional[int] = Field(None, ge=10, le=120)
-    gender: Optional[str] = Field("other")  # male, female, other
+    gender: Optional[str] = Field("other")
     height_cm: Optional[float] = Field(None, ge=50, le=280)
     weight_kg: Optional[float] = Field(None, ge=20, le=350)
-    activity_level: Optional[str] = Field("moderate")  # sedentary, light, moderate, active, very_active
-    goal: Optional[str] = Field("maintain")  # lose, maintain, gain
+    activity_level: Optional[str] = Field("moderate")
+    goal: Optional[str] = Field("maintain")
 
 class UserLogin(BaseModel):
     email: EmailStr

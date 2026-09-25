@@ -43,7 +43,7 @@ async def create_meal(
         notes=meal_in.notes,
     )
     db.add(new_meal)
-    await db.flush()  # to get new_meal.id
+    await db.flush()
 
     for item_data in meal_in.food_items:
         food_item = FoodItem(
@@ -63,8 +63,7 @@ async def create_meal(
         db.add(food_item)
 
     await db.commit()
-    
-    # Reload with food items
+
     result = await db.execute(
         select(Meal).where(Meal.id == new_meal.id).options(selectinload(Meal.food_items))
     )
@@ -137,7 +136,6 @@ async def update_meal(
     if meal_update.notes is not None:
         meal.notes = meal_update.notes
 
-    # If food items provided, replace existing items
     if meal_update.food_items is not None:
         totals = calculate_meal_totals(meal_update.food_items)
         meal.total_calories = totals["calories"]
@@ -167,8 +165,7 @@ async def update_meal(
         ]
 
     await db.commit()
-    
-    # Reload updated meal
+
     reloaded = await db.execute(
         select(Meal).where(Meal.id == meal_id).options(selectinload(Meal.food_items))
     )

@@ -47,13 +47,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (savedUser) {
           setUser(savedUser);
         }
-        // Try background refresh to verify token validity
         try {
           const freshUser = await authService.getMe();
           setUser(freshUser);
-        } catch (e) {
-          // Token might be expired
-          console.log("Token validation check completed", e);
+        } catch {
         }
       }
     } finally {

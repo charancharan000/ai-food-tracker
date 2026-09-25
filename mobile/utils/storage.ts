@@ -7,7 +7,6 @@ const API_URL_KEY = "@nutriscan_api_url";
 const THEME_KEY = "@nutriscan_theme";
 const THEME_PALETTE_KEY = "@nutriscan_theme_palette";
 
-// Default API URL: localhost for web, 10.0.2.2 for Android emulator, or LAN IP
 export const DEFAULT_API_URL = "http://localhost:8000/api/v1";
 
 export const storage = {

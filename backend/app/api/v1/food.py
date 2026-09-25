@@ -16,30 +16,19 @@ async def analyze_food(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user)
 ):
-    """
-    Receives food photo via multipart/form-data.
-    Validates, compresses, and sends to the multimodal Vision AI service.
-    Returns structured nutritional estimates and detected food items.
-    """
     if not file.filename:
         raise BadRequestException("No image file provided.")
 
-    # Read image contents
     file_bytes = await file.read()
     if not file_bytes:
         raise BadRequestException("Empty file uploaded.")
 
     content_type = file.content_type or "image/jpeg"
-
-    # Validate and optimize image
     optimized_bytes, mime_type, width, height = validate_and_process_image(
         file_bytes=file_bytes,
         content_type=content_type
     )
 
-    logger.info(f"Processing food analysis for user {current_user.id}: {file.filename} ({len(optimized_bytes)} bytes)")
-
-    # Send to AI Vision Service
     vision_service = get_ai_vision_service()
     try:
         analysis_result = await vision_service.analyze_food_image(

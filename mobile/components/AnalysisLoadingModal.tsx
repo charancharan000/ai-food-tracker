@@ -8,10 +8,10 @@ interface AnalysisLoadingModalProps {
 }
 
 const STEPS = [
-  { text: "Scanning plate image...", icon: "scan-outline" as const },
-  { text: "Detecting food items...", icon: "restaurant-outline" as const },
-  { text: "Estimating portion sizes...", icon: "scale-outline" as const },
-  { text: "Calculating calories & macros...", icon: "calculator-outline" as const },
+  { text: "Scanning photo...", icon: "scan-outline" as const },
+  { text: "Identifying items...", icon: "restaurant-outline" as const },
+  { text: "Estimating portions...", icon: "scale-outline" as const },
+  { text: "Calculating nutrition...", icon: "calculator-outline" as const },
 ];
 
 export const AnalysisLoadingModal: React.FC<AnalysisLoadingModalProps> = ({ visible }) => {
@@ -60,7 +60,6 @@ export const AnalysisLoadingModal: React.FC<AnalysisLoadingModalProps> = ({ visi
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <View style={[styles.dialog, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          {/* Animated Glow Pulsing Icon */}
           <Animated.View
             style={[
               styles.iconCircle,
@@ -80,10 +79,9 @@ export const AnalysisLoadingModal: React.FC<AnalysisLoadingModalProps> = ({ visi
           </Text>
 
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            NutriScan AI Vision is inspecting ingredients and calculating nutritional breakdown
+            Identifying ingredients and calculating nutrition breakdown
           </Text>
 
-          {/* Stepper dots */}
           <View style={styles.dotsRow}>
             {STEPS.map((_, i) => (
               <View

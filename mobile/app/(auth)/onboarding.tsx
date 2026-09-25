@@ -64,7 +64,6 @@ export default function OnboardingScreen() {
           {slide.description}
         </Text>
 
-        {/* Indicators */}
         <View style={styles.dotsRow}>
           {SLIDES.map((_, i) => (
             <View

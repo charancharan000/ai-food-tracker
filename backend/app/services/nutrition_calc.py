@@ -11,15 +11,7 @@ def scale_nutrition_by_weight(
     sugar_g: float = 0.0,
     sodium_mg: float = 0.0,
 ) -> Dict[str, float]:
-    """
-    Scale nutritional values proportionally based on weight change.
-    Formula: new_value = original_value * (new_weight / original_weight)
-    """
-    if original_weight_g <= 0:
-        ratio = 1.0
-    else:
-        ratio = max(0.0, new_weight_g / original_weight_g)
-
+    ratio = 1.0 if original_weight_g <= 0 else max(0.0, new_weight_g / original_weight_g)
     return {
         "calories": round(calories * ratio, 1),
         "protein_g": round(protein_g * ratio, 1),
@@ -41,14 +33,7 @@ def scale_nutrition_by_servings(
     sugar_g: float = 0.0,
     sodium_mg: float = 0.0,
 ) -> Dict[str, float]:
-    """
-    Scale nutritional values proportionally based on servings change.
-    """
-    if original_servings <= 0:
-        ratio = 1.0
-    else:
-        ratio = max(0.0, new_servings / original_servings)
-
+    ratio = 1.0 if original_servings <= 0 else max(0.0, new_servings / original_servings)
     return {
         "calories": round(calories * ratio, 1),
         "protein_g": round(protein_g * ratio, 1),
@@ -60,9 +45,6 @@ def scale_nutrition_by_servings(
     }
 
 def calculate_meal_totals(food_items: List[Any]) -> Dict[str, float]:
-    """
-    Calculate the total nutrition for a list of food items.
-    """
     total = {
         "calories": 0.0,
         "protein_g": 0.0,
@@ -73,7 +55,6 @@ def calculate_meal_totals(food_items: List[Any]) -> Dict[str, float]:
         "sodium_mg": 0.0,
     }
     for item in food_items:
-        # Support both Pydantic schema or dict or SQLAlchemy model
         calories = getattr(item, "calories", 0.0) if hasattr(item, "calories") else item.get("calories", 0.0)
         protein = getattr(item, "protein_g", 0.0) if hasattr(item, "protein_g") else item.get("protein_g", 0.0)
         carbs = getattr(item, "carbs_g", 0.0) if hasattr(item, "carbs_g") else item.get("carbs_g", 0.0)
@@ -100,16 +81,11 @@ def calculate_daily_calorie_and_macro_targets(
     activity_level: str = "moderate",
     goal: str = "maintain",
 ) -> Dict[str, float]:
-    """
-    Calculate BMR and TDEE using the Mifflin-St Jeor equation.
-    Derives realistic calorie targets and macronutrient distributions.
-    """
     w = weight_kg or 70.0
     h = height_cm or 170.0
     a = age or 28
     g = (gender or "other").lower()
 
-    # BMR calculation (Mifflin-St Jeor)
     if g == "male":
         bmr = 10.0 * w + 6.25 * h - 5.0 * a + 5.0
     elif g == "female":
@@ -117,7 +93,6 @@ def calculate_daily_calorie_and_macro_targets(
     else:
         bmr = 10.0 * w + 6.25 * h - 5.0 * a - 78.0
 
-    # Activity multiplier
     activity_multipliers = {
         "sedentary": 1.2,
         "light": 1.375,
@@ -128,7 +103,6 @@ def calculate_daily_calorie_and_macro_targets(
     multiplier = activity_multipliers.get(activity_level.lower(), 1.55)
     tdee = bmr * multiplier
 
-    # Goal adjustment
     goal_lower = goal.lower()
     if "lose" in goal_lower:
         target_calories = max(1200.0, tdee - 500.0)
@@ -137,19 +111,11 @@ def calculate_daily_calorie_and_macro_targets(
     else:
         target_calories = tdee
 
-    # Macronutrient targets:
-    # Protein: ~2.0g per kg of bodyweight
-    protein_g = min(w * 2.0, target_calories * 0.35 / 4.0)
-    protein_g = max(60.0, protein_g)
-    
-    # Fat: 25-30% of total calories (9 kcal/g)
+    protein_g = max(60.0, min(w * 2.0, target_calories * 0.35 / 4.0))
     fat_g = max(40.0, (target_calories * 0.25) / 9.0)
-    
-    # Carbs: remainder of calories (4 kcal/g)
     remaining_cals = max(0.0, target_calories - (protein_g * 4.0 + fat_g * 9.0))
     carb_g = max(50.0, remaining_cals / 4.0)
 
-    # Water target based on body weight (approx 35 ml per kg)
     water_ml = int(round(w * 35.0 / 250.0) * 250)
     water_ml = max(2000, min(water_ml, 4000))
 

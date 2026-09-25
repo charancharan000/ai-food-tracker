@@ -130,7 +130,6 @@ export default function MealDetailsScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={["bottom"]}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Header Summary Card */}
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.topRow}>
             <View>
@@ -152,7 +151,6 @@ export default function MealDetailsScreen() {
           ) : null}
         </View>
 
-        {/* Food Items List */}
         <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
           FOOD ITEMS ({items.length})
         </Text>
@@ -168,7 +166,6 @@ export default function MealDetailsScreen() {
           />
         ))}
 
-        {/* Save Changes Button */}
         <TouchableOpacity
           style={[styles.saveBtn, { backgroundColor: colors.primary }]}
           onPress={handleSaveChanges}

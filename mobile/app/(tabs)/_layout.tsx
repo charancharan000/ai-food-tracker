@@ -46,8 +46,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="scan"
         options={{
-          title: "Scan Food",
-          tabBarLabel: () => null, // Center prominent floating button
+          title: "Scan",
+          tabBarLabel: () => null,
           tabBarIcon: () => (
             <View
               style={[

@@ -68,7 +68,6 @@ export const MacroCard: React.FC<MacroCardProps> = ({
         </Text>
       </View>
 
-      {/* Progress Track */}
       <View style={[styles.progressTrack, { backgroundColor: colors.surfaceHighlight }]}>
         <Animated.View
           style={[

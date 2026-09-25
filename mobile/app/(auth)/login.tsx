@@ -62,7 +62,6 @@ export default function LoginScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          {/* Header */}
           <View style={styles.header}>
             <View style={[styles.iconCircle, { backgroundColor: `${colors.primary}20` }]}>
               <Ionicons name="nutrition" size={36} color={colors.primary} />
@@ -73,7 +72,6 @@ export default function LoginScreen() {
             </Text>
           </View>
 
-          {/* Error Banner */}
           {errorMessage && (
             <View style={[styles.errorBox, { backgroundColor: `${colors.danger}15`, borderColor: colors.danger }]}>
               <Ionicons name="alert-circle" size={18} color={colors.danger} />
@@ -81,7 +79,6 @@ export default function LoginScreen() {
             </View>
           )}
 
-          {/* Form */}
           <View style={styles.form}>
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: colors.textSecondary }]}>EMAIL</Text>
@@ -134,7 +131,6 @@ export default function LoginScreen() {
               )}
             </TouchableOpacity>
 
-            {/* Quick Demo Login Option */}
             <TouchableOpacity
               style={[styles.demoButton, { backgroundColor: colors.surfaceHighlight, borderColor: colors.border }]}
               onPress={handleQuickDemo}
@@ -146,7 +142,6 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Footer Link */}
           <View style={styles.footer}>
             <Text style={[styles.footerText, { color: colors.textSecondary }]}>
               Don't have an account?{" "}

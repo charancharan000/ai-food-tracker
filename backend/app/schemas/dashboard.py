@@ -39,7 +39,7 @@ class DailySummaryItem(BaseModel):
     meal_count: int
 
 class DashboardSummaryResponse(BaseModel):
-    timeframe: str  # today, yesterday, week, month
+    timeframe: str
     start_date: str
     end_date: str
     average_daily_calories: float

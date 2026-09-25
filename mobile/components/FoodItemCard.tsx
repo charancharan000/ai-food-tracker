@@ -41,7 +41,7 @@ export const FoodItemCard: React.FC<FoodItemCardProps> = ({
               </Text>
               <View style={[styles.confidencePill, { backgroundColor: `${confidenceColor}15` }]}>
                 <Text style={[styles.confidenceText, { color: confidenceColor }]}>
-                  {confidencePct}% AI
+                  {confidencePct}% match
                 </Text>
               </View>
             </View>
@@ -71,7 +71,6 @@ export const FoodItemCard: React.FC<FoodItemCardProps> = ({
         </View>
       </View>
 
-      {/* Quick Macro Breakdown */}
       <View style={[styles.macrosRow, { backgroundColor: colors.surfaceLight }]}>
         <Text style={[styles.macroItem, { color: colors.indigo }]}>
           P: <Text style={styles.macroVal}>{Math.round(item.protein_g)}g</Text>
@@ -89,7 +88,6 @@ export const FoodItemCard: React.FC<FoodItemCardProps> = ({
         )}
       </View>
 
-      {/* Expanded Portion Editor */}
       {isEditing && (
         <PortionEditor
           item={item}

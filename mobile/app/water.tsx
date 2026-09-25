@@ -64,7 +64,6 @@ export default function WaterScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={["bottom"]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Main Hydration Progress Card */}
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.waterIconCircle}>
             <Ionicons name="water" size={48} color={colors.cyan} />
@@ -78,7 +77,6 @@ export default function WaterScreen() {
             {percentage}% of Daily Hydration Goal
           </Text>
 
-          {/* Progress Bar */}
           <View style={[styles.track, { backgroundColor: colors.surfaceHighlight }]}>
             <View
               style={[
@@ -93,7 +91,6 @@ export default function WaterScreen() {
           </Text>
         </View>
 
-        {/* Quick Add Presets */}
         <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>QUICK ADD WATER</Text>
         <View style={styles.buttonRow}>
           {[250, 500, 750, 1000].map((amt) => (
@@ -116,7 +113,6 @@ export default function WaterScreen() {
           ))}
         </View>
 
-        {/* Today's Water Logs */}
         <Text style={[styles.sectionTitle, { color: colors.textSecondary, marginTop: 14 }]}>
           TODAY'S INTAKE HISTORY
         </Text>

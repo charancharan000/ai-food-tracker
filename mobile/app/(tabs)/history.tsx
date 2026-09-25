@@ -114,10 +114,8 @@ export default function HistoryScreen() {
     }
   };
 
-  // Group meals by meal_type
   const mealTypes: MealType[] = ["Breakfast", "Lunch", "Snack", "Dinner"];
 
-  // Compute daily totals
   const totalCalories = meals.reduce((acc, m) => acc + m.total_calories, 0);
   const totalProtein = meals.reduce((acc, m) => acc + m.total_protein, 0);
   const totalCarbs = meals.reduce((acc, m) => acc + m.total_carbs, 0);
@@ -125,11 +123,9 @@ export default function HistoryScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={["top"]}>
-      {/* Header */}
       <View style={styles.topBar}>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Food Log & History</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Food Log</Text>
         
-        {/* Toggle between Meal Log & Nutrition Charts */}
         <View style={[styles.tabSwitch, { backgroundColor: colors.surfaceHighlight }]}>
           <TouchableOpacity
             style={[
@@ -144,7 +140,7 @@ export default function HistoryScreen() {
                 { color: activeTab === "log" ? "#FFFFFF" : colors.textSecondary },
               ]}
             >
-              Meal Log
+              Log
             </Text>
           </TouchableOpacity>
 
@@ -167,7 +163,6 @@ export default function HistoryScreen() {
         </View>
       </View>
 
-      {/* Timeframe Filter Pills */}
       <View style={styles.timeframeRow}>
         {(["today", "yesterday", "week", "month"] as const).map((tf) => (
           <TouchableOpacity
@@ -204,7 +199,6 @@ export default function HistoryScreen() {
           </View>
         ) : activeTab === "log" ? (
           <>
-            {/* Day Total Strip */}
             <View style={[styles.summaryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.summaryTop}>
                 <Text style={[styles.summaryDate, { color: colors.textSecondary }]}>
@@ -234,7 +228,6 @@ export default function HistoryScreen() {
               </View>
             </View>
 
-            {/* Meals grouped by type */}
             {mealTypes.map((type) => {
               const matchingMeals = meals.filter((m) => m.meal_type.toLowerCase() === type.toLowerCase());
 
@@ -285,7 +278,6 @@ export default function HistoryScreen() {
                           </View>
                         </View>
 
-                        {/* List items */}
                         <View style={styles.foodItemList}>
                           {meal.food_items.map((item, idx) => (
                             <View key={idx} style={styles.foodRow}>
@@ -299,7 +291,6 @@ export default function HistoryScreen() {
                           ))}
                         </View>
 
-                        {/* Bottom macro pill */}
                         <View style={[styles.mealMacroBar, { borderTopColor: colors.surfaceHighlight }]}>
                           <Text style={[styles.macroPillSmall, { color: colors.primary }]}>
                             {Math.round(meal.total_calories)} kcal
@@ -328,7 +319,6 @@ export default function HistoryScreen() {
             })}
           </>
         ) : (
-          /* CHARTS TAB */
           <View style={styles.chartsContainer}>
             <View style={[styles.chartCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Text style={[styles.chartTitle, { color: colors.text }]}>Daily Calorie Intake</Text>
@@ -336,7 +326,6 @@ export default function HistoryScreen() {
                 Average: {summary?.average_daily_calories || 0} kcal / day
               </Text>
 
-              {/* Bar visualization */}
               <View style={styles.barGraph}>
                 {summary?.daily_stats.map((day, idx) => {
                   const target = day.target_calories || 2000;
@@ -368,7 +357,6 @@ export default function HistoryScreen() {
               </View>
             </View>
 
-            {/* Macro Totals Card */}
             <View style={[styles.chartCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Text style={[styles.chartTitle, { color: colors.text }]}>Macro Breakdown</Text>
               <Text style={[styles.chartSubtitle, { color: colors.textSecondary }]}>

@@ -3,19 +3,14 @@ import { apiClient } from "./api";
 import { FoodAnalysisResponse, Meal, MealCreatePayload } from "../types/food";
 
 export const foodService = {
-  /**
-   * Upload food photo using multipart/form-data to AI vision endpoint
-   */
   async analyzeFood(imageUri: string, mimeType: string = "image/jpeg"): Promise<FoodAnalysisResponse> {
     const formData = new FormData();
 
     if (Platform.OS === "web") {
-      // In web environment, convert URI/blob to File
       const response = await fetch(imageUri);
       const blob = await response.blob();
       formData.append("file", blob, "food_photo.jpg");
     } else {
-      // In React Native native environment
       const cleanUri = Platform.OS === "ios" ? imageUri.replace("file://", "") : imageUri;
       const filePayload: any = {
         uri: cleanUri,

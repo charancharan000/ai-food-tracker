@@ -34,7 +34,6 @@ export default function ProfileSetupScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Compute estimated targets dynamically
   const estimated = useMemo(() => {
     const a = parseInt(age, 10) || 28;
     const h = parseFloat(height) || 175;
@@ -88,7 +87,7 @@ export default function ProfileSetupScreen() {
             </TouchableOpacity>
             <Text style={[styles.title, { color: colors.text }]}>Personalize Your Targets</Text>
             <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-              Tell us about yourself so NutriScan AI can tailor your daily calorie & macro goals
+              Tell us about yourself so we can calculate your daily calorie & macro goals
             </Text>
           </View>
 
@@ -99,7 +98,6 @@ export default function ProfileSetupScreen() {
             </View>
           )}
 
-          {/* Goal Selector */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>PRIMARY FITNESS GOAL</Text>
             <View style={styles.optionsRow}>
@@ -137,7 +135,6 @@ export default function ProfileSetupScreen() {
             </View>
           </View>
 
-          {/* Gender Selector */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>GENDER</Text>
             <View style={styles.optionsRow}>
@@ -166,7 +163,6 @@ export default function ProfileSetupScreen() {
             </View>
           </View>
 
-          {/* Biometrics Input Grid */}
           <View style={styles.grid}>
             <View style={styles.gridCol}>
               <Text style={[styles.label, { color: colors.textSecondary }]}>AGE</Text>
@@ -208,7 +204,6 @@ export default function ProfileSetupScreen() {
             </View>
           </View>
 
-          {/* Activity Level */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>ACTIVITY LEVEL</Text>
             <View style={styles.verticalOptions}>
@@ -240,7 +235,6 @@ export default function ProfileSetupScreen() {
             </View>
           </View>
 
-          {/* AI Calculated Target Display & Custom Override */}
           <View style={[styles.targetCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={styles.targetHeader}>
               <Ionicons name="sparkles" size={20} color={colors.primary} />
@@ -281,7 +275,6 @@ export default function ProfileSetupScreen() {
             </View>
           </View>
 
-          {/* Complete Button */}
           <TouchableOpacity
             style={[styles.finishBtn, { backgroundColor: colors.primary }]}
             onPress={handleFinishRegistration}
@@ -291,7 +284,7 @@ export default function ProfileSetupScreen() {
             {isLoading ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.finishBtnText}>Complete Profile & Launch NutriScan</Text>
+              <Text style={styles.finishBtnText}>Complete Profile</Text>
             )}
           </TouchableOpacity>
         </ScrollView>

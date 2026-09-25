@@ -34,7 +34,6 @@ async def update_profile(
     if profile_in.goal is not None:
         current_user.goal = profile_in.goal
 
-    # Recalculate targets based on updated profile
     targets = calculate_daily_calorie_and_macro_targets(
         age=current_user.age,
         gender=current_user.gender,

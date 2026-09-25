@@ -115,7 +115,6 @@ export const WaterTrackerCard: React.FC<WaterTrackerCardProps> = ({
         </View>
       </View>
 
-      {/* Animated Water Bar */}
       <View style={[styles.track, { backgroundColor: colors.surfaceHighlight }]}>
         <Animated.View
           style={[

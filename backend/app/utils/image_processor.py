@@ -15,18 +15,15 @@ def validate_and_process_image(
     Validates the uploaded image bytes, checks size and format,
     and returns (optimized_bytes, mime_type, width, height).
     """
-    # 1. Size check
     max_bytes = settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024
     if len(file_bytes) > max_bytes:
         raise BadRequestException(f"Image file exceeds maximum size of {settings.MAX_UPLOAD_SIZE_MB}MB.")
 
-    # 2. Content-type check
     if content_type.lower() not in settings.ALLOWED_IMAGE_TYPES:
         raise BadRequestException(
             f"Invalid image format '{content_type}'. Supported formats: JPEG, PNG, WEBP."
         )
 
-    # 3. Open with PIL and verify integrity
     try:
         image = Image.open(io.BytesIO(file_bytes))
         image.load()

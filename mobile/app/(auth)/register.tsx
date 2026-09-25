@@ -38,7 +38,6 @@ export default function RegisterScreen() {
       return;
     }
 
-    // Pass credentials to profile setup step
     router.push({
       pathname: "/(auth)/profile-setup",
       params: {
@@ -56,18 +55,16 @@ export default function RegisterScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
               <Ionicons name="arrow-back" size={24} color={colors.text} />
             </TouchableOpacity>
             <Text style={[styles.title, { color: colors.text }]}>Create Account</Text>
             <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-              Join NutriScan AI and start tracking your meals with vision AI
+              Create your account to start tracking meals and macros
             </Text>
           </View>
 
-          {/* Error Banner */}
           {errorMessage && (
             <View style={[styles.errorBox, { backgroundColor: `${colors.danger}15`, borderColor: colors.danger }]}>
               <Ionicons name="alert-circle" size={18} color={colors.danger} />
@@ -75,7 +72,6 @@ export default function RegisterScreen() {
             </View>
           )}
 
-          {/* Form */}
           <View style={styles.form}>
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: colors.textSecondary }]}>FULL NAME</Text>
@@ -141,7 +137,6 @@ export default function RegisterScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Footer Link */}
           <View style={styles.footer}>
             <Text style={[styles.footerText, { color: colors.textSecondary }]}>
               Already have an account?{" "}

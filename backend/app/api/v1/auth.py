@@ -13,12 +13,10 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 async def register(user_in: UserRegister, db: AsyncSession = Depends(get_db)):
-    # Check if user already exists
     existing_result = await db.execute(select(User).where(User.email == user_in.email.lower()))
     if existing_result.scalar_one_or_none():
         raise BadRequestException("An account with this email already exists.")
-    
-    # Calculate initial targets based on profile
+
     targets = calculate_daily_calorie_and_macro_targets(
         age=user_in.age,
         gender=user_in.gender,
@@ -27,8 +25,7 @@ async def register(user_in: UserRegister, db: AsyncSession = Depends(get_db)):
         activity_level=user_in.activity_level or "moderate",
         goal=user_in.goal or "maintain"
     )
-    
-    # Create user
+
     new_user = User(
         name=user_in.name.strip(),
         email=user_in.email.lower().strip(),

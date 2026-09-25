@@ -85,13 +85,11 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={["top"]}>
-      {/* Top Bar */}
       <View style={styles.topBar}>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Profile & Settings</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Profile</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* User Info Card */}
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.profileHeader}>
             <View style={[styles.avatarCircle, { backgroundColor: `${colors.primary}20` }]}>
@@ -100,7 +98,7 @@ export default function ProfileScreen() {
               </Text>
             </View>
             <View style={styles.profileInfo}>
-              <Text style={[styles.userName, { color: colors.text }]}>{user?.name || "NutriScan User"}</Text>
+              <Text style={[styles.userName, { color: colors.text }]}>{user?.name || "User"}</Text>
               <Text style={[styles.userEmail, { color: colors.textSecondary }]}>{user?.email}</Text>
               <View style={[styles.goalPill, { backgroundColor: `${colors.primary}15` }]}>
                 <Text style={[styles.goalPillText, { color: colors.primary }]}>
@@ -110,7 +108,6 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          {/* Biometrics Strip */}
           <View style={[styles.bioStrip, { borderTopColor: colors.surfaceHighlight }]}>
             <View style={styles.bioCol}>
               <Text style={[styles.bioVal, { color: colors.text }]}>{user?.age || "--"}</Text>
@@ -133,7 +130,6 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Nutrition Goals Card */}
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.cardTitleRow}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
@@ -248,11 +244,9 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {/* Preferences & Settings */}
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Text style={[styles.cardTitle, { color: colors.text, marginBottom: 12 }]}>App Settings</Text>
+          <Text style={[styles.cardTitle, { color: colors.text, marginBottom: 12 }]}>Settings</Text>
 
-          {/* Theme & Palette Studio */}
           <View style={styles.themeStudio}>
             <View style={styles.themeHeaderRow}>
               <View style={styles.settingsRowLeft}>
@@ -261,9 +255,9 @@ export default function ProfileScreen() {
                   size={20}
                   color={colors.primary}
                 />
-                <Text style={[styles.settingsRowLabel, { color: colors.text }]}>Appearance & Theme</Text>
+                <Text style={[styles.settingsRowLabel, { color: colors.text }]}>Theme</Text>
               </View>
-              {/* Mode Toggle Pills */}
+
               <View style={[styles.modeTogglePills, { backgroundColor: colors.surfaceHighlight }]}>
                 <TouchableOpacity
                   style={[
@@ -295,8 +289,7 @@ export default function ProfileScreen() {
               </View>
             </View>
 
-            {/* Palette Options Grid */}
-            <Text style={[styles.paletteLabel, { color: colors.textSecondary }]}>COLOR THEME</Text>
+            <Text style={[styles.paletteLabel, { color: colors.textSecondary }]}>ACCENT COLOR</Text>
             <View style={styles.paletteGrid}>
               {presets.map((preset) => {
                 const isSelected = palette === preset.id;
@@ -333,10 +326,9 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          {/* Backend API Host Config */}
           <View style={[styles.apiConfigBox, { borderTopColor: colors.surfaceHighlight }]}>
             <Text style={[styles.apiConfigTitle, { color: colors.textSecondary }]}>
-              BACKEND API SERVER URL
+              API SERVER URL
             </Text>
             <View style={styles.apiInputRow}>
               <TextInput
@@ -360,7 +352,6 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Logout Button */}
         <TouchableOpacity
           style={[styles.logoutBtn, { borderColor: colors.danger }]}
           onPress={handleLogout}

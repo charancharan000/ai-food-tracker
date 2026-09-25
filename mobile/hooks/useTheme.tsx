@@ -63,7 +63,6 @@ export const THEME_PRESETS: ThemePreset[] = [
   },
 ];
 
-// Dark Palettes
 const darkPalettes: Record<ThemePaletteId, ColorTheme> = {
   cyber_violet: {
     background: "#090A11",
@@ -75,7 +74,7 @@ const darkPalettes: Record<ThemePaletteId, ColorTheme> = {
     text: "#F8FAFC",
     textSecondary: "#94A3B8",
     textMuted: "#64748B",
-    primary: "#8B5CF6", // Electric Violet hero
+    primary: "#8B5CF6",
     primaryLight: "#A78BFA",
     primaryGlow: "rgba(139, 92, 246, 0.35)",
     emerald: "#10B981",
@@ -95,7 +94,7 @@ const darkPalettes: Record<ThemePaletteId, ColorTheme> = {
     text: "#FDFEFE",
     textSecondary: "#A1A8BA",
     textMuted: "#697084",
-    primary: "#FF5376", // Sunset Coral hero
+    primary: "#FF5376",
     primaryLight: "#FF7597",
     primaryGlow: "rgba(255, 83, 118, 0.35)",
     emerald: "#10B981",
@@ -115,7 +114,7 @@ const darkPalettes: Record<ThemePaletteId, ColorTheme> = {
     text: "#F8FAFC",
     textSecondary: "#94A3B8",
     textMuted: "#64748B",
-    primary: "#3B82F6", // Electric Cobalt hero
+    primary: "#3B82F6",
     primaryLight: "#60A5FA",
     primaryGlow: "rgba(59, 130, 246, 0.35)",
     emerald: "#10B981",
@@ -135,7 +134,7 @@ const darkPalettes: Record<ThemePaletteId, ColorTheme> = {
     text: "#F8FAFC",
     textSecondary: "#94A3B8",
     textMuted: "#64748B",
-    primary: "#10B981", // Luminous Emerald hero
+    primary: "#10B981",
     primaryLight: "#34D399",
     primaryGlow: "rgba(16, 185, 129, 0.35)",
     emerald: "#10B981",
@@ -147,7 +146,6 @@ const darkPalettes: Record<ThemePaletteId, ColorTheme> = {
   },
 };
 
-// Light Palettes matching active accents
 const lightPalettes: Record<ThemePaletteId, ColorTheme> = {
   cyber_violet: {
     background: "#F6F7FB",

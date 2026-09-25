@@ -65,7 +65,6 @@ export default function HomeDashboardScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={["top"]}>
-      {/* Top Header */}
       <View style={styles.topHeader}>
         <View>
           <Text style={[styles.greetingSubtitle, { color: colors.textSecondary }]}>
@@ -104,12 +103,11 @@ export default function HomeDashboardScreen() {
           <View style={styles.centerLoading}>
             <ActivityIndicator size="large" color={colors.primary} />
             <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-              Loading today's nutrition...
+              Loading...
             </Text>
           </View>
         ) : (
           <>
-            {/* Calorie Overview Hero Card */}
             <View
               style={[
                 styles.heroCard,
@@ -138,7 +136,6 @@ export default function HomeDashboardScreen() {
                 />
               </View>
 
-              {/* Quick stats under ring */}
               <View style={[styles.statsStrip, { borderTopColor: colors.surfaceHighlight }]}>
                 <View style={styles.statBox}>
                   <Text style={[styles.statNum, { color: colors.text }]}>
@@ -163,7 +160,6 @@ export default function HomeDashboardScreen() {
               </View>
             </View>
 
-            {/* Macros Section */}
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionHeading, { color: colors.text }]}>Macronutrients</Text>
             </View>
@@ -189,14 +185,12 @@ export default function HomeDashboardScreen() {
               />
             </View>
 
-            {/* Water Tracker Widget */}
             <WaterTrackerCard
               consumedMl={dashboard?.water_consumed_ml || 0}
               targetMl={dashboard?.water_target_ml || 2500}
               onLogged={fetchDashboard}
             />
 
-            {/* Today's Meals Section */}
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionHeading, { color: colors.text }]}>Today's Meals</Text>
               <TouchableOpacity onPress={() => router.push("/(tabs)/history")}>

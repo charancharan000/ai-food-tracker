@@ -85,7 +85,6 @@ export const MealCard: React.FC<MealCardProps> = ({
         </TouchableOpacity>
       </View>
 
-      {/* Meals listed if any */}
       {meals.length > 0 ? (
         <View style={styles.mealList}>
           {meals.map((meal) => (
