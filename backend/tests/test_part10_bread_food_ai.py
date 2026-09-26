@@ -26,7 +26,10 @@ from app.food_ai.datasets.bread_hard_negatives import (
     disambiguate_bread_pair,
     BreadStackDetector,
     KothuParottaSegmenter,
-    BreadStuffingToppingDiscriminator
+    BreadStuffingToppingDiscriminator,
+    AlooParathaStuffingVerifier,
+    MilletBreadGrainVerifier,
+    Section64NonNegotiableBreadVerifier
 )
 from app.food_ai.datasets.bread_composite_decomposer import (
     BreadMealDecomposer,
@@ -42,7 +45,11 @@ from app.food_ai.portion_engine.bread_portions import (
 from app.food_ai.nutrition_engine.bread_recipes import (
     BreadRecipeNutritionCalculator,
     Section82BreadSingleOutput,
-    Section82BreadMultiOutput
+    Section82BreadMultiOutput,
+    Section50BreadSingleAnnotation,
+    Section50MultiFoodAnnotation,
+    Section51UnknownBreadOutput,
+    Section62FinalAppOutput
 )
 from app.food_ai.inference_orchestrator import production_orchestrator
 
@@ -51,7 +58,12 @@ class TestPart10BreadTaxonomy:
     """Tests bread taxonomy coverage and hierarchical attributes."""
 
     def test_taxonomy_coverage(self):
-        assert len(BREAD_TAXONOMY_REGISTRY) >= 25
+        assert len(BREAD_TAXONOMY_REGISTRY) >= 60
+        # Verify Section 23: Dosa family separation as fermented rice/lentil pancake
+        dosa_rec = get_bread_food_class("BREAD_PANCAKE_DOSA_PLAIN")
+        assert dosa_rec is not None
+        assert dosa_rec.bread_family == "Fermented rice/lentil pancake family"
+        assert dosa_rec.hierarchy.level4_bread_family == "Fermented rice/lentil pancake family"
         # Verify unknown fallback exists
         assert "BREAD_UNKNOWN_001" in BREAD_TAXONOMY_REGISTRY
 
@@ -317,3 +329,213 @@ class TestPart10NutritionAndOrchestrator:
         assert multi.total_estimated_weight_g == 410.0
         assert "kcal" in multi.total_estimated_calories_range
         assert multi.overall_confidence == "High"
+
+
+class TestPart10ExtendedHardNegatives:
+    """Tests Section 42 comprehensive confusion pairs."""
+
+    def test_appam_vs_dosa_disambiguation(self):
+        # Appam: bowl concave, spongy center, lacy edges
+        res = disambiguate_bread_pair(
+            pair_id="appam_vs_dosa",
+            visual_features={"shape": "curved_bowl", "center": "thick_spongy_white", "edges": "lacy_frills"}
+        )
+        assert "Appam" in res["predicted_dish"]
+        assert res["confidence"] == "High"
+
+        # Dosa: flat crepe, golden brown roasted
+        res_dosa = disambiguate_bread_pair(
+            pair_id="appam_vs_dosa",
+            visual_features={"shape": "flat_crepe", "center": "thin_crisp", "edges": "golden_brown_roasted"}
+        )
+        assert "Dosa" in res_dosa["predicted_dish"]
+
+    def test_pathiri_vs_neer_dosa_disambiguation(self):
+        # Pathiri: smooth opaque dry circular disc
+        res_pathiri = disambiguate_bread_pair(
+            pair_id="pathiri_vs_neer_dosa",
+            visual_features={"surface": "smooth_opaque_dry", "presentation": "flat_circular_disc", "texture": "soft_dry_roti"}
+        )
+        assert "Pathiri" in res_pathiri["predicted_dish"]
+
+        # Neer Dosa: folded quadrant, moist delicate crepe, lacy perforated
+        res_neer = disambiguate_bread_pair(
+            pair_id="pathiri_vs_neer_dosa",
+            visual_features={"surface": "lacy_perforated_micro_holes", "presentation": "folded_quadrant", "texture": "moist_delicate_crepe"}
+        )
+        assert "Neer Dosa" in res_neer["predicted_dish"]
+
+    def test_jowar_vs_bajra_roti_disambiguation(self):
+        # Jowar: pale ivory cream
+        res_jowar = disambiguate_bread_pair(
+            pair_id="jowar_roti_vs_bajra_roti",
+            visual_features={"color": "pale_ivory_cream_grey", "grain_type": "jowar_sorghum"}
+        )
+        assert "Jowar" in res_jowar["predicted_dish"]
+
+        # Bajra: dark slate greenish grey
+        res_bajra = disambiguate_bread_pair(
+            pair_id="jowar_roti_vs_bajra_roti",
+            visual_features={"color": "dark_slate_greenish_grey", "grain_type": "bajra_pearl_millet"}
+        )
+        assert "Bajra" in res_bajra["predicted_dish"]
+
+    def test_roomali_roti_vs_thin_chapati_disambiguation(self):
+        # Roomali: large 30-45 cm, handkerchief folded
+        res_roomali = disambiguate_bread_pair(
+            pair_id="roomali_roti_vs_thin_chapati",
+            visual_features={"diameter_cm": "large_30_to_45cm", "presentation": "handkerchief_folded"}
+        )
+        assert "Roomali" in res_roomali["predicted_dish"]
+
+    def test_puri_vs_kachori_disambiguation(self):
+        # Puri: thin elastic hollow puff
+        res_puri = disambiguate_bread_pair(
+            pair_id="puri_vs_kachori",
+            visual_features={"crust": "thin_elastic_hollow_puff", "stuffing": "none"}
+        )
+        assert "Puri" in res_puri["predicted_dish"]
+
+        # Kachori: thick flaky shortcrust, spiced lentil core
+        res_kachori = disambiguate_bread_pair(
+            pair_id="puri_vs_kachori",
+            visual_features={"crust": "thick_flaky_shortcrust", "stuffing": "spiced_lentil_core"}
+        )
+        assert "Kachori" in res_kachori["predicted_dish"]
+
+
+class TestPart10SpecificationVerifiers:
+    """Tests Section 9, 16, 34, 64 quality rules & verifiers."""
+
+    def test_aloo_paratha_stuffing_verifier_hidden_fallback(self):
+        # Section 9 Rule: If stuffing is hidden without visible bulges or cut section,
+        # return 'Paratha — stuffed variant uncertain'
+        dish, conf, reason = production_orchestrator.verify_aloo_paratha_stuffing(
+            visual_cues={"has_stuffing_bulges": False, "has_cut_section_showing_filling": False, "stuffing_detected": "unknown"}
+        )
+        assert dish == "Paratha — stuffed variant uncertain"
+        assert conf < 0.70
+        assert "Section 9 Rule" in reason
+
+    def test_aloo_paratha_stuffing_verifier_cut_section_success(self):
+        dish, conf, reason = production_orchestrator.verify_aloo_paratha_stuffing(
+            visual_cues={"has_cut_section_showing_filling": True, "stuffing_detected": "potato"}
+        )
+        assert dish == "Aloo Paratha"
+        assert conf >= 0.90
+
+    def test_millet_bread_grain_verifier_color_alone_fallback(self):
+        # Section 16 Rule: Do not infer flour solely from color
+        dish, conf, reason = production_orchestrator.verify_millet_bread_grain(
+            visual_cues={"color": "grey", "grain_type": "unknown", "has_verified_millet_texture": False}
+        )
+        assert dish == "Millet-based flatbread — exact grain uncertain"
+        assert conf < 0.70
+        assert "Section 16 Rule" in reason
+
+    def test_millet_bread_grain_verifier_texture_verified(self):
+        dish, conf, reason = production_orchestrator.verify_millet_bread_grain(
+            visual_cues={"color": "slate_grey", "grain_type": "bajra", "has_verified_millet_texture": True}
+        )
+        assert dish == "Bajra Roti"
+        assert conf >= 0.90
+
+    def test_section_64_rules_enforcement(self):
+        # Rule: Naan and Kulcha must never be merged
+        ok1, reason1 = production_orchestrator.verify_section_64_bread_rule(
+            candidate_bread="Butter Naan",
+            visual_features={"is_kulcha": True}
+        )
+        assert ok1 is False
+        assert "Kulcha" in reason1
+
+        # Rule: Surface shine alone does not prove butter
+        ok2, reason2 = production_orchestrator.verify_section_64_bread_rule(
+            candidate_bread="Butter Naan",
+            visual_features={"surface_shine": "heavy_sheen", "has_melting_butter_slab": False}
+        )
+        assert ok2 is False
+        assert "shine alone" in reason2
+
+        # Rule: Chopped parotta with egg/meat must never be classified as plain parotta
+        ok3, reason3 = production_orchestrator.verify_section_64_bread_rule(
+            candidate_bread="Plain Parotta",
+            visual_features={"is_chopped_shreds": True}
+        )
+        assert ok3 is False
+        assert "plain parotta" in reason3
+
+
+class TestPart10SchemasAndOutputs:
+    """Tests Section 50, 51, 62 output schemas."""
+
+    def test_section_50_single_bread_annotation_schema(self):
+        ann: Section50BreadSingleAnnotation = production_orchestrator.generate_bread_section_50_single_annotation(
+            food_category="bread",
+            region="north_indian",
+            food_name="aloo_paratha",
+            variant="stuffed",
+            flour="wheat",
+            cooking_method="tawa",
+            stuffing=["potato"],
+            toppings=["butter"],
+            count=2,
+            estimated_weight_g=180.0,
+            confidence=0.91
+        )
+        assert ann.food_category == "bread"
+        assert ann.food_name == "aloo_paratha"
+        assert ann.count == 2
+        assert ann.estimated_weight_g == 180.0
+        assert ann.confidence == 0.91
+        assert "potato" in ann.stuffing
+        assert "butter" in ann.toppings
+
+    def test_section_50_multi_food_annotation_schema(self):
+        multi: Section50MultiFoodAnnotation = production_orchestrator.generate_bread_section_50_multi_annotation(
+            foods_spec=[
+                {"name": "chapati", "count": 3, "estimated_weight_g": 120.0},
+                {"name": "dal", "estimated_weight_g": 150.0},
+                {"name": "vegetable_curry", "estimated_weight_g": 100.0}
+            ]
+        )
+        assert len(multi.foods) == 3
+        assert multi.foods[0].name == "chapati"
+        assert multi.foods[0].count == 3
+        assert multi.foods[1].name == "dal"
+        assert multi.foods[2].name == "vegetable_curry"
+
+    def test_section_51_unknown_bread_fallback_schema(self):
+        res: Section51UnknownBreadOutput = production_orchestrator.generate_bread_section_51_unknown_fallback(
+            prediction="Indian flatbread — exact type uncertain",
+            fallback_alternative="Bread-like food — insufficient visual evidence",
+            confidence=0.38
+        )
+        assert res.status == "uncertain"
+        assert res.prediction == "Indian flatbread — exact type uncertain"
+        assert res.confidence == 0.38
+        assert res.user_confirmation_required is True
+
+    def test_section_62_final_app_output_schema(self):
+        out: Section62FinalAppOutput = production_orchestrator.generate_bread_section_62_final_app_output(
+            meal_title="Paratha Breakfast Platter",
+            paratha_count=2,
+            paratha_weight_g=180.0,
+            has_curd=True,
+            curd_weight_g=100.0,
+            has_pickle=True,
+            pickle_weight_g=15.0
+        )
+        assert out.meal_title == "Paratha Breakfast Platter"
+        assert len(out.detected_foods) == 3
+        assert out.detected_foods[0].food_name == "Aloo Paratha"
+        assert out.detected_foods[0].quantity == 2
+        assert out.detected_foods[0].estimated_weight_g == 180.0
+        assert out.detected_foods[1].food_name == "Curd"
+        assert out.detected_foods[1].estimated_weight_g == 100.0
+        assert out.detected_foods[2].food_name == "Pickle"
+        assert out.detected_foods[2].estimated_weight_g == 15.0
+        assert out.user_can_edit is True
+        assert "food" in out.detected_foods[0].editable_fields
+        assert "quantity" in out.detected_foods[0].editable_fields
+        assert "weight" in out.detected_foods[0].editable_fields

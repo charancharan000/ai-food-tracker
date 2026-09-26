@@ -176,8 +176,264 @@ BREAD_CONFUSION_REGISTRY: Dict[str, BreadConfusionPair] = {
         ],
         a_visual_cues={"geometry": "flat_uniform_circle", "texture": "soft_thin_flatbread", "color": "chalk_white"},
         b_visual_cues={"geometry": "bowl_shaped_curved", "texture": "spongy_thick_center_lacy_edges", "color": "white_with_crisp_rim"}
+    ),
+    "roti_vs_chapati": BreadConfusionPair(
+        pair_id="roti_vs_chapati",
+        dish_a="Tawa Whole Wheat Roti",
+        dish_b="Homestyle Soft Chapati",
+        distinguishing_features=[
+            "Rolling & oiling: Chapati is typically rolled with a fold or oil smear, producing delicate thin layers; Roti is a single rolled disc",
+            "Softness: Chapati retains high pliability when folded into quarters; rustic Tawa Roti is slightly firmer with rustic toasted spots"
+        ],
+        a_visual_cues={"structure": "single_sheet", "pliability": "firm_rustic", "spotting": "toasted_brown_patches"},
+        b_visual_cues={"structure": "thin_multi_layer_fold", "pliability": "very_soft_pliable", "spotting": "delicate_light_freckles"}
+    ),
+    "roti_vs_paratha": BreadConfusionPair(
+        pair_id="roti_vs_paratha",
+        dish_a="Plain Wheat Roti",
+        dish_b="Plain Tawa Paratha",
+        distinguishing_features=[
+            "Oil / fat application: Roti is dry-cooked on tawa with no fat during griddling (ghee optionally brushed after); Paratha is shallow-fried with oil/ghee sizzled directly on the tawa",
+            "Crust finish: Dry matte surface with blister spots on Roti vs glistening, crispy, shallow-fried golden crust on Paratha"
+        ],
+        a_visual_cues={"cooking_fat": "dry_tawa", "surface_texture": "matte_soft", "sheen": "none_or_light"},
+        b_visual_cues={"cooking_fat": "sizzled_tawa_oil", "surface_texture": "crisp_fried_crust", "sheen": "fried_glaze"}
+    ),
+    "paratha_vs_laccha_paratha": BreadConfusionPair(
+        pair_id="paratha_vs_laccha_paratha",
+        dish_a="Plain Triangle / Square Paratha",
+        dish_b="Laccha Paratha",
+        distinguishing_features=[
+            "Layering pattern: Plain paratha has 3–4 internal geometric fold sheets; Laccha paratha displays dozens of fine concentric spiral rings visible on the surface",
+            "Edge appearance: Smooth folded edges on triangle paratha vs multi-ribbed flaky ringed perimeter on Laccha"
+        ],
+        a_visual_cues={"layers": "geometric_internal_folds", "rings": "none"},
+        b_visual_cues={"layers": "visible_concentric_spiral_rings", "rings": "distinct_visible"}
+    ),
+    "puri_vs_kachori": BreadConfusionPair(
+        pair_id="puri_vs_kachori",
+        dish_a="Whole Wheat Puffy Puri",
+        dish_b="Khasta Dal Kachori",
+        distinguishing_features=[
+            "Crust texture: Puri has a thin, elastic, blistered golden shell that collapses upon cooling; Kachori has a thick, rigid, shatteringly crumbly shortcrust pastry shell (khasta)",
+            "Stuffing: Puri is empty/hollow inside; Kachori is packed with a dense, highly spiced roasted urad/moong dal or onion filling"
+        ],
+        a_visual_cues={"crust": "thin_elastic_hollow_puff", "stuffing": "none", "rigidity": "soft_deflating"},
+        b_visual_cues={"crust": "thick_flaky_shortcrust", "stuffing": "spiced_lentil_core", "rigidity": "rigid_spherical"}
+    ),
+    "thepla_vs_roti": BreadConfusionPair(
+        pair_id="thepla_vs_roti",
+        dish_a="Gujarati Methi Thepla",
+        dish_b="Plain Wheat Roti",
+        distinguishing_features=[
+            "Ingredients: Thepla contains chopped fresh fenugreek (methi) leaves, turmeric golden hue, ajwain, sesame seeds, and yogurt in dough; Roti is solely wheat flour and water",
+            "Shelf stability & thinness: Thepla is rolled paper-thin and stays flexible for days due to oil and yogurt moisture"
+        ],
+        a_visual_cues={"color": "yellow_turmeric_with_green_flecks", "herbs": ["methi_leaves", "sesame_seeds"], "thickness": "paper_thin"},
+        b_visual_cues={"color": "uniform_wheat_beige", "herbs": [], "thickness": "standard_medium"}
+    ),
+    "bhakri_vs_thick_roti": BreadConfusionPair(
+        pair_id="bhakri_vs_thick_roti",
+        dish_a="Coarse Grain Bhakri",
+        dish_b="Thick Wheat Roti",
+        distinguishing_features=[
+            "Flour & texture: Bhakri is made from gluten-free millet (jowar, bajra, ragi) or coarse wheat, showing visible grain meal, rustic cracks, and hand-patted edges; Thick Roti has smooth gluten-stretched rolled edges"
+        ],
+        a_visual_cues={"edges": "cracked_hand_patted", "flour_texture": "coarse_millet_grit", "color": "millet_ash_or_grey"},
+        b_visual_cues={"edges": "smooth_rolled", "flour_texture": "smooth_wheat_atta", "color": "golden_brown_wheat"}
+    ),
+    "jowar_roti_vs_bajra_roti": BreadConfusionPair(
+        pair_id="jowar_roti_vs_bajra_roti",
+        dish_a="Jowar Roti (Sorghum)",
+        dish_b="Bajra Roti (Pearl Millet)",
+        distinguishing_features=[
+            "Color shade: Jowar is light cream, chalky pale ivory, or light grey; Bajra is dark greenish-grey, earthy brown, or slate grey",
+            "Flavor & aroma: Mild earthy grain for Jowar vs robust, nutty, grassy rustic aroma for Bajra"
+        ],
+        a_visual_cues={"color": "pale_ivory_cream_grey", "grain_type": "jowar_sorghum"},
+        b_visual_cues={"color": "dark_slate_greenish_grey", "grain_type": "bajra_pearl_millet"}
+    ),
+    "ragi_roti_vs_jowar_roti": BreadConfusionPair(
+        pair_id="ragi_roti_vs_jowar_roti",
+        dish_a="Ragi Roti (Finger Millet)",
+        dish_b="Jowar Roti (Sorghum)",
+        distinguishing_features=[
+            "Color: Ragi is distinctly dark chocolate-brown, purplish-brown, or deep terracotta red; Jowar is pale cream/white"
+        ],
+        a_visual_cues={"color": "dark_chocolate_purplish_brown", "grain_type": "ragi_finger_millet"},
+        b_visual_cues={"color": "pale_ivory_cream", "grain_type": "jowar_sorghum"}
+    ),
+    "appam_vs_dosa": BreadConfusionPair(
+        pair_id="appam_vs_dosa",
+        dish_a="Kerala Appam",
+        dish_b="Crisp Plain Dosa",
+        distinguishing_features=[
+            "Shape & curvature: Appam has a bowl-curved structure with a fluffy spongy domed center and delicate lacy translucent perimeter; Dosa is completely flat, large in diameter, and uniformly crisp",
+            "Color: Appam is pristine white in center with pale golden lacy rim; Dosa has deep uniform golden-brown roasted caramelization"
+        ],
+        a_visual_cues={"shape": "curved_bowl", "center": "thick_spongy_white", "edges": "lacy_frills"},
+        b_visual_cues={"shape": "flat_crepe", "center": "thin_crisp", "edges": "golden_brown_roasted"}
+    ),
+    "appam_vs_neer_dosa": BreadConfusionPair(
+        pair_id="appam_vs_neer_dosa",
+        dish_a="Kerala Appam",
+        dish_b="Mangalorean Neer Dosa",
+        distinguishing_features=[
+            "Structure: Appam has a thick puffed fermented center with lacy edges; Neer Dosa is uniformly thin, feather-light, unfermented, and folded into triangular or rectangular handkerchief folds",
+            "Cooking vessel: Appam is swirled in a concave appachatti; Neer Dosa is poured onto a flat tawa and covered"
+        ],
+        a_visual_cues={"geometry": "bowl_concave", "thickness": "thick_center_thin_edge", "fermentation": "fermented_yeasty"},
+        b_visual_cues={"geometry": "folded_flat_triangle", "thickness": "uniformly_thin_lacy", "fermentation": "unfermented_rice"}
+    ),
+    "pathiri_vs_neer_dosa": BreadConfusionPair(
+        pair_id="pathiri_vs_neer_dosa",
+        dish_a="Malabar Rice Pathiri",
+        dish_b="Mangalorean Neer Dosa",
+        distinguishing_features=[
+            "Texture & preparation: Pathiri is rolled from cooked rice flour dough, dry-roasted on tawa, smooth, opaque chalk-white, and completely dry; Neer Dosa is poured from a watery batter, moist, lacy, perforated with micro-holes, and folded"
+        ],
+        a_visual_cues={"surface": "smooth_opaque_dry", "presentation": "flat_circular_disc", "texture": "soft_dry_roti"},
+        b_visual_cues={"surface": "lacy_perforated_micro_holes", "presentation": "folded_quadrant", "texture": "moist_delicate_crepe"}
+    ),
+    "neer_dosa_vs_paper_dosa": BreadConfusionPair(
+        pair_id="neer_dosa_vs_paper_dosa",
+        dish_a="Mangalorean Neer Dosa",
+        dish_b="South Indian Paper Roast Dosa",
+        distinguishing_features=[
+            "Texture & color: Neer Dosa is soft, moist, snow-white, and pliable; Paper Roast Dosa is paper-thin, shatteringly brittle, deep golden brown, and rolled into a giant cone or cylindrical tube"
+        ],
+        a_visual_cues={"color": "snow_white", "texture": "soft_moist_pliable", "shape": "folded_soft_crepe"},
+        b_visual_cues={"color": "deep_golden_brown", "texture": "brittle_crisp_shatter", "shape": "long_cylinder_or_cone"}
+    ),
+    "adai_vs_dosa": BreadConfusionPair(
+        pair_id="adai_vs_dosa",
+        dish_a="Tamil Multi-Dal Adai",
+        dish_b="Fermented Rice Dosa",
+        distinguishing_features=[
+            "Texture & color: Adai is thick, heavy, rustic, coarse-textured with visible broken lentil grains, red chillies, and curry leaves; Dosa is thin, smooth, and evenly roasted from smooth fermented batter"
+        ],
+        a_visual_cues={"texture": "coarse_granular_lentil", "thickness": "thick_rustic", "inclusions": ["curry_leaves", "chilli_flakes"]},
+        b_visual_cues={"texture": "smooth_fermented_crepe", "thickness": "thin_crisp", "inclusions": []}
+    ),
+    "pesarattu_vs_green_dosa": BreadConfusionPair(
+        pair_id="pesarattu_vs_green_dosa",
+        dish_a="Andhra Pesarattu",
+        dish_b="Palak / Green Herb Dosa",
+        distinguishing_features=[
+            "Batter source: Pesarattu is naturally greenish-yellow from unhulled green gram (whole moong dal) ground with ginger and green chillies, topped with diced raw onions and cumin; Green Dosa is colored with spinach puree added to fermented rice batter"
+        ],
+        a_visual_cues={"hue": "olive_greenish_yellow", "toppings": ["diced_onions", "cumin_seeds"], "batter_base": "whole_green_moong"},
+        b_visual_cues={"hue": "bright_emerald_spinach_green", "toppings": [], "batter_base": "rice_urad_spinach"}
+    ),
+    "roomali_roti_vs_thin_chapati": BreadConfusionPair(
+        pair_id="roomali_roti_vs_thin_chapati",
+        dish_a="Roomali Roti",
+        dish_b="Thin Homestyle Chapati",
+        distinguishing_features=[
+            "Size & thinness: Roomali Roti is massive in diameter (30–45 cm), handkerchief-thin, translucent, and folded like a handkerchief; Chapati is standard personal size (15–18 cm)"
+        ],
+        a_visual_cues={"diameter_cm": "large_30_to_45cm", "presentation": "handkerchief_folded", "thickness": "translucent_paper_thin"},
+        b_visual_cues={"diameter_cm": "standard_15_to_18cm", "presentation": "flat_circular_disc", "thickness": "standard_thin"}
     )
 }
+
+# =============================================================================
+# SECTIONS 9, 16, 64 — ANTI-BIAS & SPECIFICATION VERIFIERS
+# =============================================================================
+
+class AlooParathaStuffingVerifier:
+    """
+    Implements Section 9:
+    - Never detect Aloo Paratha merely from brown circular appearance.
+    - If potato stuffing is hidden or unproven by visible stuffing bulges,
+      cut-section evidence, or verified recipe context, returns fallback:
+      'Paratha — stuffed variant uncertain'
+    """
+    @staticmethod
+    def verify_stuffing(visual_cues: Dict[str, Any]) -> Tuple[str, float, str]:
+        has_visible_bulges = visual_cues.get("has_stuffing_bulges", False)
+        has_cut_section = visual_cues.get("has_cut_section_showing_filling", False)
+        stuffing_detected = visual_cues.get("stuffing_detected", "unknown").lower()
+
+        if has_cut_section and "potato" in stuffing_detected:
+            return "Aloo Paratha", 0.95, "Verified potato filling confirmed via cut-section cross-view."
+        elif has_visible_bulges and ("potato" in stuffing_detected or "aloo" in stuffing_detected):
+            return "Aloo Paratha", 0.88, "Visible golden potato filling bulges and surface texture confirm Aloo Paratha."
+        elif "paneer" in stuffing_detected:
+            return "Paneer Paratha", 0.92, "White crumbly cottage cheese stuffing identified."
+        elif "gobi" in stuffing_detected:
+            return "Gobi Paratha", 0.90, "Grated cauliflower stuffing identified."
+        elif "mooli" in stuffing_detected:
+            return "Mooli Paratha", 0.89, "Grated white radish stuffing identified."
+        else:
+            # Section 9 fallback rule
+            return "Paratha — stuffed variant uncertain", 0.62, "Section 9 Rule: Stuffing is hidden beneath surface; cannot confirm Aloo Paratha without evidence."
+
+
+class MilletBreadGrainVerifier:
+    """
+    Implements Section 16:
+    - Do not infer flour solely from color.
+    - If visual evidence is insufficient to distinguish Bajra from Jowar or Ragi,
+      returns fallback: 'Millet-based flatbread — exact grain uncertain'
+    """
+    @staticmethod
+    def verify_grain(visual_cues: Dict[str, Any]) -> Tuple[str, float, str]:
+        color = visual_cues.get("color", "").lower()
+        grain_specified = visual_cues.get("grain_type", "").lower()
+        has_verified_texture = visual_cues.get("has_verified_millet_texture", False)
+
+        if "ragi" in grain_specified or "chocolate_purplish" in color:
+            return "Ragi Roti", 0.93, "Distinct dark purple-brown finger millet grain verified."
+        elif "bajra" in grain_specified and has_verified_texture:
+            return "Bajra Roti", 0.91, "Coarse cracked pearl millet texture and slate-grey hue verified."
+        elif "jowar" in grain_specified and has_verified_texture:
+            return "Jowar Roti", 0.92, "Smooth patted pale cream sorghum grain verified."
+        else:
+            # Section 16 fallback rule
+            return "Millet-based flatbread — exact grain uncertain", 0.58, "Section 16 Rule: Color alone is insufficient to verify exact millet species without grain texture evidence."
+
+
+class Section64NonNegotiableBreadVerifier:
+    """
+    Implements Section 64 Non-Negotiable Quality Rules:
+    - Never classify every flatbread as roti.
+    - Never classify every fried bread as puri.
+    - Never classify every layered bread as paratha.
+    - Never classify naan and kulcha as the same class.
+    - Never classify Kerala parotta and laccha paratha as identical.
+    - Never infer flour solely from color.
+    - Never infer exact stuffing without evidence.
+    - Separate bread from curry, chutney, and gravy.
+    - Never assume butter from shine alone.
+    """
+    @staticmethod
+    def verify_prediction(
+        candidate_bread: str,
+        visual_features: Dict[str, Any]
+    ) -> Tuple[bool, str]:
+        cand = candidate_bread.lower()
+
+        # Rule 1: Never classify naan and kulcha as same class
+        if "naan" in cand and visual_features.get("is_kulcha", False):
+            return False, "Section 64 Rule: Naan and Kulcha must never be merged into the same class."
+
+        # Rule 2: Never classify Kerala parotta and laccha paratha as identical
+        if "parotta" in cand and visual_features.get("is_laccha_paratha", False):
+            return False, "Section 64 Rule: Kerala parotta and laccha paratha are distinct classes."
+
+        # Rule 3: Never assume butter from shine alone
+        shine = visual_features.get("surface_shine", "").lower()
+        has_slab = visual_features.get("has_melting_butter_slab", False)
+        if "butter" in cand and shine == "heavy_sheen" and not has_slab:
+            return False, "Section 64 Rule: Surface shine alone does not prove butter (could be oil or steam wash)."
+
+        # Rule 4: Kothu parotta never classified as plain parotta
+        if "plain parotta" in cand and visual_features.get("is_chopped_shreds", False):
+            return False, "Section 64 Rule: Chopped parotta with egg/meat must never be classified as plain parotta."
+
+        return True, "Valid prediction complying with Section 64 rules."
+
 
 
 class DisambiguationResult(dict):

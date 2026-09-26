@@ -87,6 +87,85 @@ class Section82BreadMultiOutput(BaseModel):
     overall_confidence_score: float
 
 
+# =============================================================================
+# SECTIONS 50, 51, 62 — SPEC-ALIGNED SCHEMAS
+# =============================================================================
+
+class Section50BreadSingleAnnotation(BaseModel):
+    """
+    Section 50: Image Annotation Schema (Single Bread Image)
+    """
+    food_category: str = "bread"
+    region: str = "north_indian"
+    food_name: str = "aloo_paratha"
+    variant: str = "stuffed"
+    flour: str = "wheat"
+    cooking_method: str = "tawa"
+    stuffing: List[str] = Field(default_factory=lambda: ["potato"])
+    toppings: List[str] = Field(default_factory=lambda: ["butter"])
+    count: int = 2
+    estimated_weight_g: float = 180.0
+    confidence: float = 0.91
+
+
+class Section50FoodItem(BaseModel):
+    name: str
+    count: Optional[int] = None
+    estimated_weight_g: float
+
+
+class Section50MultiFoodAnnotation(BaseModel):
+    """
+    Section 50: Multi-Food Annotation Schema
+    """
+    foods: List[Section50FoodItem]
+
+
+class Section51UnknownBreadOutput(BaseModel):
+    """
+    Section 51: Unknown Bread System Fallback
+    If uncertain, do NOT force 'Roti'. Instead return:
+    'Indian flatbread — exact type uncertain' or
+    'Bread-like food — insufficient visual evidence'
+    """
+    status: str = "uncertain"
+    food_category: str = "bread"
+    prediction: str = "Indian flatbread — exact type uncertain"
+    fallback_alternative: str = "Bread-like food — insufficient visual evidence"
+    confidence: float = 0.38
+    user_confirmation_required: bool = True
+    prompt: str = "Could you specify which Indian bread this is? (e.g. Chapati, Naan, Paratha, Kulcha)"
+
+
+class Section62DetectedItem(BaseModel):
+    food_name: str
+    quantity: int = 1
+    estimated_weight_g: float
+    calorie_range_kcal: List[int]
+    protein_range_g: List[int]
+    carbs_range_g: Optional[List[int]] = None
+    fat_range_g: Optional[List[int]] = None
+    confidence: str = "High"
+    editable_fields: List[str] = Field(default_factory=lambda: ["food", "quantity", "weight", "recipe", "oil_ghee", "toppings"])
+
+
+class Section62FinalAppOutput(BaseModel):
+    """
+    Section 62: Final App Output
+    Example:
+    Detected Foods:
+    Aloo Paratha (Quantity: 2, Weight: 180g, Calories: range, Confidence: High)
+    Curd (Weight: 100g, Calories: range, Confidence: Medium)
+    Pickle (Weight: 15g, Calories: range, Confidence: Medium)
+    Allows user to edit: food, quantity, weight, recipe, oil/ghee, toppings.
+    """
+    meal_title: str
+    detected_foods: List[Section62DetectedItem]
+    total_estimated_weight_g: float
+    total_estimated_calories_range: str
+    user_can_edit: bool = True
+
+
 class BreadRecipeNutritionCalculator:
     """
     Implements Sections 64, 65, 82, 84, 85:
@@ -328,3 +407,164 @@ class BreadRecipeNutritionCalculator:
             overall_confidence=overall_conf,
             overall_confidence_score=round(avg_conf, 2)
         )
+
+    @classmethod
+    def generate_section_50_single_annotation(
+        cls,
+        food_category: str = "bread",
+        region: str = "north_indian",
+        food_name: str = "aloo_paratha",
+        variant: str = "stuffed",
+        flour: str = "wheat",
+        cooking_method: str = "tawa",
+        stuffing: Optional[List[str]] = None,
+        toppings: Optional[List[str]] = None,
+        count: int = 2,
+        estimated_weight_g: float = 180.0,
+        confidence: float = 0.91
+    ) -> Section50BreadSingleAnnotation:
+        """
+        Generates Section 50 compliant Image Annotation Schema for Single Food.
+        """
+        return Section50BreadSingleAnnotation(
+            food_category=food_category,
+            region=region,
+            food_name=food_name,
+            variant=variant,
+            flour=flour,
+            cooking_method=cooking_method,
+            stuffing=stuffing or ["potato"],
+            toppings=toppings or ["butter"],
+            count=count,
+            estimated_weight_g=round(estimated_weight_g, 1),
+            confidence=round(confidence, 2)
+        )
+
+    @classmethod
+    def generate_section_50_multi_annotation(
+        cls,
+        foods_spec: Optional[List[Dict[str, Any]]] = None
+    ) -> Section50MultiFoodAnnotation:
+        """
+        Generates Section 50 compliant Multi-Food Annotation Schema.
+        """
+        if foods_spec is None:
+            foods_spec = [
+                {"name": "chapati", "count": 3, "estimated_weight_g": 120.0},
+                {"name": "dal", "estimated_weight_g": 150.0},
+                {"name": "vegetable_curry", "estimated_weight_g": 100.0}
+            ]
+        items = [
+            Section50FoodItem(
+                name=f["name"],
+                count=f.get("count"),
+                estimated_weight_g=float(f["estimated_weight_g"])
+            )
+            for f in foods_spec
+        ]
+        return Section50MultiFoodAnnotation(foods=items)
+
+    @classmethod
+    def generate_section_51_unknown_fallback(
+        cls,
+        prediction: str = "Indian flatbread — exact type uncertain",
+        fallback_alternative: str = "Bread-like food — insufficient visual evidence",
+        confidence: float = 0.38
+    ) -> Section51UnknownBreadOutput:
+        """
+        Generates Section 51 compliant Unknown Bread System Fallback.
+        """
+        return Section51UnknownBreadOutput(
+            status="uncertain",
+            food_category="bread",
+            prediction=prediction,
+            fallback_alternative=fallback_alternative,
+            confidence=round(confidence, 2),
+            user_confirmation_required=True,
+            prompt="Could you specify which Indian bread this is? (e.g. Chapati, Naan, Paratha, Kulcha)"
+        )
+
+    @classmethod
+    def generate_section_62_final_app_output(
+        cls,
+        meal_title: str = "Paratha Breakfast Platter",
+        paratha_count: int = 2,
+        paratha_weight_g: float = 180.0,
+        has_curd: bool = True,
+        curd_weight_g: float = 100.0,
+        has_pickle: bool = True,
+        pickle_weight_g: float = 15.0
+    ) -> Section62FinalAppOutput:
+        """
+        Generates Section 62 Final App Output Example:
+        - Aloo Paratha (Quantity: 2, Weight: 180g, Calories range, Confidence: High)
+        - Curd (Weight: 100g, Calories range, Confidence: Medium)
+        - Pickle (Weight: 15g, Calories range, Confidence: Medium)
+        - Full editing metadata enabled.
+        """
+        paratha_calc = cls.calculate_single_dish(
+            food_identifier="Aloo Paratha",
+            custom_weight_g=paratha_weight_g,
+            piece_count=paratha_count
+        )
+        cals_low = int(round(paratha_calc.calories_low / 10.0) * 10)
+        cals_high = int(round(paratha_calc.calories_high / 10.0) * 10)
+
+        items: List[Section62DetectedItem] = [
+            Section62DetectedItem(
+                food_name="Aloo Paratha",
+                quantity=paratha_count,
+                estimated_weight_g=round(paratha_weight_g, 1),
+                calorie_range_kcal=[cals_low, cals_high],
+                protein_range_g=[int(round(paratha_calc.protein_g * 0.85)), int(round(paratha_calc.protein_g * 1.15))],
+                carbs_range_g=[int(round(paratha_calc.carbs_g * 0.85)), int(round(paratha_calc.carbs_g * 1.15))],
+                fat_range_g=[int(round(paratha_calc.fat_g * 0.85)), int(round(paratha_calc.fat_g * 1.15))],
+                confidence="High",
+                editable_fields=["food", "quantity", "weight", "recipe", "oil_ghee", "toppings"]
+            )
+        ]
+
+        total_weight = paratha_weight_g
+        tot_cals_min = cals_low
+        tot_cals_max = cals_high
+
+        if has_curd:
+            items.append(Section62DetectedItem(
+                food_name="Curd",
+                quantity=1,
+                estimated_weight_g=round(curd_weight_g, 1),
+                calorie_range_kcal=[60, 80],
+                protein_range_g=[3, 5],
+                carbs_range_g=[4, 6],
+                fat_range_g=[3, 5],
+                confidence="Medium",
+                editable_fields=["food", "quantity", "weight"]
+            ))
+            total_weight += curd_weight_g
+            tot_cals_min += 60
+            tot_cals_max += 80
+
+        if has_pickle:
+            items.append(Section62DetectedItem(
+                food_name="Pickle",
+                quantity=1,
+                estimated_weight_g=round(pickle_weight_g, 1),
+                calorie_range_kcal=[15, 25],
+                protein_range_g=[0, 1],
+                carbs_range_g=[1, 3],
+                fat_range_g=[1, 2],
+                confidence="Medium",
+                editable_fields=["food", "quantity", "weight"]
+            ))
+            total_weight += pickle_weight_g
+            tot_cals_min += 15
+            tot_cals_max += 25
+
+        return Section62FinalAppOutput(
+            meal_title=meal_title,
+            detected_foods=items,
+            total_estimated_weight_g=round(total_weight, 1),
+            total_estimated_calories_range=f"{tot_cals_min}–{tot_cals_max} kcal",
+            user_can_edit=True
+        )
+

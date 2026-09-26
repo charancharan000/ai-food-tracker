@@ -200,7 +200,10 @@ from app.food_ai.datasets.bread_hard_negatives import (
     disambiguate_bread_pair,
     BreadStackDetector,
     KothuParottaSegmenter,
-    BreadStuffingToppingDiscriminator
+    BreadStuffingToppingDiscriminator,
+    AlooParathaStuffingVerifier,
+    MilletBreadGrainVerifier,
+    Section64NonNegotiableBreadVerifier
 )
 from app.food_ai.datasets.bread_composite_decomposer import (
     BreadMealDecomposer,
@@ -211,7 +214,13 @@ from app.food_ai.datasets.bread_composite_decomposer import (
 from app.food_ai.nutrition_engine.bread_recipes import (
     BreadRecipeNutritionCalculator,
     Section82BreadSingleOutput,
-    Section82BreadMultiOutput
+    Section82BreadMultiOutput,
+    Section50BreadSingleAnnotation,
+    Section50FoodItem,
+    Section50MultiFoodAnnotation,
+    Section51UnknownBreadOutput,
+    Section62DetectedItem,
+    Section62FinalAppOutput
 )
 
 
@@ -1645,6 +1654,120 @@ class ProductionInferenceOrchestrator:
         return BreadRecipeNutritionCalculator.calculate_composite_plate(
             plate_title=plate_title,
             items=items
+        )
+
+    def generate_bread_section_50_single_annotation(
+        self,
+        food_category: str = "bread",
+        region: str = "north_indian",
+        food_name: str = "aloo_paratha",
+        variant: str = "stuffed",
+        flour: str = "wheat",
+        cooking_method: str = "tawa",
+        stuffing: Optional[List[str]] = None,
+        toppings: Optional[List[str]] = None,
+        count: int = 2,
+        estimated_weight_g: float = 180.0,
+        confidence: float = 0.91
+    ) -> Section50BreadSingleAnnotation:
+        """
+        Generates Section 50 compliant Image Annotation Schema for Single Bread.
+        """
+        return BreadRecipeNutritionCalculator.generate_section_50_single_annotation(
+            food_category=food_category,
+            region=region,
+            food_name=food_name,
+            variant=variant,
+            flour=flour,
+            cooking_method=cooking_method,
+            stuffing=stuffing,
+            toppings=toppings,
+            count=count,
+            estimated_weight_g=estimated_weight_g,
+            confidence=confidence
+        )
+
+    def generate_bread_section_50_multi_annotation(
+        self,
+        foods_spec: Optional[List[Dict[str, Any]]] = None
+    ) -> Section50MultiFoodAnnotation:
+        """
+        Generates Section 50 compliant Multi-Food Annotation Schema.
+        """
+        return BreadRecipeNutritionCalculator.generate_section_50_multi_annotation(
+            foods_spec=foods_spec
+        )
+
+    def generate_bread_section_51_unknown_fallback(
+        self,
+        prediction: str = "Indian flatbread — exact type uncertain",
+        fallback_alternative: str = "Bread-like food — insufficient visual evidence",
+        confidence: float = 0.38
+    ) -> Section51UnknownBreadOutput:
+        """
+        Generates Section 51 compliant Unknown Bread System Fallback.
+        """
+        return BreadRecipeNutritionCalculator.generate_section_51_unknown_fallback(
+            prediction=prediction,
+            fallback_alternative=fallback_alternative,
+            confidence=confidence
+        )
+
+    def generate_bread_section_62_final_app_output(
+        self,
+        meal_title: str = "Paratha Breakfast Platter",
+        paratha_count: int = 2,
+        paratha_weight_g: float = 180.0,
+        has_curd: bool = True,
+        curd_weight_g: float = 100.0,
+        has_pickle: bool = True,
+        pickle_weight_g: float = 15.0
+    ) -> Section62FinalAppOutput:
+        """
+        Generates Section 62 Final App Output Example:
+        Aloo Paratha (2 pcs, 180g) + Curd (100g) + Pickle (15g) with user editing.
+        """
+        return BreadRecipeNutritionCalculator.generate_section_62_final_app_output(
+            meal_title=meal_title,
+            paratha_count=paratha_count,
+            paratha_weight_g=paratha_weight_g,
+            has_curd=has_curd,
+            curd_weight_g=curd_weight_g,
+            has_pickle=has_pickle,
+            pickle_weight_g=pickle_weight_g
+        )
+
+    def verify_aloo_paratha_stuffing(
+        self,
+        visual_cues: Dict[str, Any]
+    ) -> Tuple[str, float, str]:
+        """
+        Enforces Section 9: Returns 'Paratha — stuffed variant uncertain'
+        if potato filling is not clearly proven.
+        """
+        return AlooParathaStuffingVerifier.verify_stuffing(visual_cues=visual_cues)
+
+    def verify_millet_bread_grain(
+        self,
+        visual_cues: Dict[str, Any]
+    ) -> Tuple[str, float, str]:
+        """
+        Enforces Section 16: Returns 'Millet-based flatbread — exact grain uncertain'
+        if grain species cannot be confirmed beyond mere color.
+        """
+        return MilletBreadGrainVerifier.verify_grain(visual_cues=visual_cues)
+
+    def verify_section_64_bread_rule(
+        self,
+        candidate_bread: str,
+        visual_features: Dict[str, Any]
+    ) -> Tuple[bool, str]:
+        """
+        Enforces Section 64 Non-Negotiable Rules.
+        """
+        return Section64NonNegotiableBreadVerifier.verify_prediction(
+            candidate_bread=candidate_bread,
+            visual_features=visual_features
         )
 
 production_orchestrator = ProductionInferenceOrchestrator()
