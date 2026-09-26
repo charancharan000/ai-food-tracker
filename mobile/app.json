@@ -1,31 +1,32 @@
 {
   "expo": {
-    "name": "NutriScan AI",
-    "slug": "nutriscan-ai",
+    "name": "FITBRO",
+    "slug": "fitbro",
     "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "scheme": "nutriscan",
+    "scheme": "fitbro",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0F172A"
+      "backgroundColor": "#000000"
     },
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.fitbro.app",
       "infoPlist": {
-        "NSCameraUsageDescription": "NutriScan AI uses your camera to capture food and calculate nutritional information.",
-        "NSPhotoLibraryUsageDescription": "NutriScan AI accesses your gallery to allow selecting meal photos for nutrition analysis."
+        "NSCameraUsageDescription": "FITBRO uses your camera to capture food and calculate nutritional information.",
+        "NSPhotoLibraryUsageDescription": "FITBRO accesses your gallery to allow selecting meal photos for nutrition analysis."
       }
     },
     "android": {
-      "package": "com.nutriscan.ai",
+      "package": "com.fitbro.app",
       "versionCode": 5,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#0F172A"
+        "backgroundColor": "#000000"
       },
       "permissions": [
         "android.permission.CAMERA",
@@ -41,13 +42,13 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow NutriScan AI to access your camera to scan meals."
+          "cameraPermission": "Allow FITBRO to access your camera to scan meals."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow NutriScan AI to access your photos to select meal images."
+          "photosPermission": "Allow FITBRO to access your photos to select meal images."
         }
       ]
     ]

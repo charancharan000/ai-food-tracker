@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -46,9 +46,11 @@ export default function OnboardingScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.topBar}>
-        <Text style={[styles.brand, { color: colors.text }]}>
-          NutriScan <Text style={{ color: colors.primary }}>AI</Text>
-        </Text>
+        <Image
+          source={require("../../assets/logo.png")}
+          style={{ width: 140, height: 42 }}
+          resizeMode="contain"
+        />
         <TouchableOpacity onPress={() => router.push("/(auth)/login")}>
           <Text style={[styles.skipText, { color: colors.primary }]}>Skip</Text>
         </TouchableOpacity>

@@ -7,6 +7,7 @@ import {
   RefreshControl,
   TouchableOpacity,
   ActivityIndicator,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -67,11 +68,13 @@ export default function HomeDashboardScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={["top"]}>
       <View style={styles.topHeader}>
         <View>
+          <Image
+            source={require("../../assets/logo.png")}
+            style={{ width: 115, height: 32, marginBottom: 4 }}
+            resizeMode="contain"
+          />
           <Text style={[styles.greetingSubtitle, { color: colors.textSecondary }]}>
-            {getGreeting()},
-          </Text>
-          <Text style={[styles.greetingName, { color: colors.text }]}>
-            {firstName} 👋
+            {getGreeting()}, {firstName} 👋
           </Text>
         </View>
 

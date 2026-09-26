@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -50,9 +51,9 @@ export default function LoginScreen() {
   };
 
   const handleQuickDemo = async () => {
-    setEmail("demo@nutriscan.ai");
+    setEmail("demo@fitbro.app");
     setPassword("DemoPassword123!");
-    await handleLogin("demo@nutriscan.ai", "DemoPassword123!");
+    await handleLogin("demo@fitbro.app", "DemoPassword123!");
   };
 
   return (
@@ -63,12 +64,14 @@ export default function LoginScreen() {
       >
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
-            <View style={[styles.iconCircle, { backgroundColor: `${colors.primary}20` }]}>
-              <Ionicons name="nutrition" size={36} color={colors.primary} />
-            </View>
+            <Image
+              source={require("../../assets/logo.png")}
+              style={styles.appLogo}
+              resizeMode="contain"
+            />
             <Text style={[styles.title, { color: colors.text }]}>Welcome Back</Text>
             <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-              Log in to track your meals and health progress
+              Log in to track your meals, workouts, and health progress
             </Text>
           </View>
 
@@ -177,6 +180,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 16,
+  },
+  appLogo: {
+    width: 220,
+    height: 70,
+    marginBottom: 12,
+    alignSelf: "center",
   },
   title: {
     fontSize: 26,
