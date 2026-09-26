@@ -18,6 +18,7 @@ import { dashboardService } from "../../services/dashboardService";
 import { Meal, MealType } from "../../types/food";
 import { DashboardSummary } from "../../types/dashboard";
 import { formatDateLabel, formatTime } from "../../utils/formatters";
+import { Skeleton } from "../../components/SkeletonLoader";
 
 export default function HistoryScreen() {
   const { colors } = useTheme();
@@ -194,8 +195,26 @@ export default function HistoryScreen() {
         showsVerticalScrollIndicator={false}
       >
         {loading && !refreshing ? (
-          <View style={styles.centerLoading}>
-            <ActivityIndicator size="large" color={colors.primary} />
+          <View style={{ gap: 14 }}>
+            <View style={[styles.summaryCard, { backgroundColor: colors.surface, borderColor: colors.border, padding: 18 }]}>
+              <Skeleton width="40%" height={16} style={{ marginBottom: 12 }} />
+              <Skeleton width="70%" height={26} style={{ marginBottom: 14 }} />
+              <View style={{ flexDirection: "row", gap: 8 }}>
+                <Skeleton width="30%" height={24} borderRadius={12} />
+                <Skeleton width="30%" height={24} borderRadius={12} />
+                <Skeleton width="30%" height={24} borderRadius={12} />
+              </View>
+            </View>
+            <View style={[styles.mealCard, { backgroundColor: colors.surface, borderColor: colors.border, padding: 16 }]}>
+              <Skeleton width="50%" height={18} style={{ marginBottom: 10 }} />
+              <Skeleton width="80%" height={14} style={{ marginBottom: 8 }} />
+              <Skeleton width="35%" height={14} />
+            </View>
+            <View style={[styles.mealCard, { backgroundColor: colors.surface, borderColor: colors.border, padding: 16 }]}>
+              <Skeleton width="45%" height={18} style={{ marginBottom: 10 }} />
+              <Skeleton width="75%" height={14} style={{ marginBottom: 8 }} />
+              <Skeleton width="30%" height={14} />
+            </View>
           </View>
         ) : activeTab === "log" ? (
           <>

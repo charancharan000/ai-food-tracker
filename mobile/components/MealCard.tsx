@@ -12,7 +12,7 @@ interface MealCardProps {
   onMealPress?: (meal: Meal) => void;
 }
 
-export const MealCard: React.FC<MealCardProps> = ({
+export const MealCard: React.FC<MealCardProps> = React.memo(({
   mealType,
   calories,
   meals,
@@ -132,7 +132,7 @@ export const MealCard: React.FC<MealCardProps> = ({
       )}
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   card: {

@@ -10,7 +10,7 @@ interface MacroRingProps {
   strokeWidth?: number;
 }
 
-export const MacroRing: React.FC<MacroRingProps> = ({
+export const MacroRing: React.FC<MacroRingProps> = React.memo(({
   consumed,
   target,
   size = 184,
@@ -22,18 +22,20 @@ export const MacroRing: React.FC<MacroRingProps> = ({
   const circumference = 2 * Math.PI * radius;
   const targetPercentage = target > 0 ? Math.min(1, Math.max(0, consumed / target)) : 0;
   const [animatedPct, setAnimatedPct] = useState(0);
+  const [displayCals, setDisplayCals] = useState(0);
   const animValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const anim = Animated.timing(animValue, {
       toValue: targetPercentage,
-      duration: 900,
+      duration: 550,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
     });
 
     const listenerId = animValue.addListener(({ value }) => {
       setAnimatedPct(value);
+      setDisplayCals(Math.round(value * (target || consumed)));
     });
 
     anim.start();
@@ -42,7 +44,7 @@ export const MacroRing: React.FC<MacroRingProps> = ({
       animValue.removeListener(listenerId);
       anim.stop();
     };
-  }, [targetPercentage]);
+  }, [targetPercentage, target, consumed]);
 
   const strokeDashoffset = circumference - circumference * animatedPct;
   const remaining = Math.max(0, Math.round(target - consumed));
@@ -93,7 +95,7 @@ export const MacroRing: React.FC<MacroRingProps> = ({
 
       <View style={styles.centerContent}>
         <Text style={[styles.calorieValue, { color: colors.text }]}>
-          {Math.round(consumed).toLocaleString()}
+          {(displayCals || Math.round(consumed)).toLocaleString()}
         </Text>
         <Text style={[styles.calorieLabel, { color: colors.textSecondary }]}>
           / {Math.round(target).toLocaleString()} kcal
@@ -114,7 +116,7 @@ export const MacroRing: React.FC<MacroRingProps> = ({
       </View>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

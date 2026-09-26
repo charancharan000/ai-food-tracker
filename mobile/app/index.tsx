@@ -1,39 +1,99 @@
-import React, { useEffect } from "react";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import React, { useEffect, useRef } from "react";
+import {
+  View,
+  StyleSheet,
+  Animated,
+  Easing,
+  StatusBar,
+  Dimensions,
+} from "react-native";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../hooks/useAuth";
-import { useTheme } from "../hooks/useTheme";
+
+const { width } = Dimensions.get("window");
 
 export default function SplashScreen() {
   const { isAuthenticated, isLoading } = useAuth();
-  const { colors } = useTheme();
   const router = useRouter();
 
+  // Animation values
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const logoScale = useRef(new Animated.Value(0.92)).current;
+  const containerOpacity = useRef(new Animated.Value(1)).current;
+  const containerTranslateY = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
-    if (!isLoading) {
-      if (isAuthenticated) {
-        router.replace("/(tabs)");
-      } else {
-        router.replace("/(auth)/onboarding");
-      }
-    }
-  }, [isLoading, isAuthenticated]);
+    // 1. Entrance: Smooth Fade-In + Slight Scale-Up (0.92 -> 1.0 in 850ms)
+    Animated.parallel([
+      Animated.timing(logoOpacity, {
+        toValue: 1,
+        duration: 850,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(logoScale, {
+        toValue: 1.0,
+        duration: 850,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      // 2. Brief hold (250ms), then smooth upward fade-out exit (250ms)
+      setTimeout(() => {
+        Animated.parallel([
+          Animated.timing(containerOpacity, {
+            toValue: 0,
+            duration: 260,
+            easing: Easing.in(Easing.cubic),
+            useNativeDriver: true,
+          }),
+          Animated.timing(containerTranslateY, {
+            toValue: -20,
+            duration: 260,
+            easing: Easing.in(Easing.cubic),
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          // Route immediately to main app
+          if (!isLoading) {
+            if (isAuthenticated) {
+              router.replace("/(tabs)");
+            } else {
+              router.replace("/(auth)/onboarding");
+            }
+          } else {
+            // If auth check still running, fallback smoothly
+            router.replace("/(tabs)");
+          }
+        });
+      }, 250);
+    });
+  }, [isLoading, isAuthenticated, router]);
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
-        <View style={[styles.iconCircle, { backgroundColor: `${colors.primary}20` }]}>
-          <Ionicons name="scan" size={48} color={colors.primary} />
-        </View>
-        <Text style={[styles.title, { color: colors.text }]}>
-          NutriScan <Text style={{ color: colors.primary }}>AI</Text>
-        </Text>
-        <Text style={[styles.tagline, { color: colors.textSecondary }]}>
-          Smart AI Mobile Food & Nutrition Tracking
-        </Text>
-        <ActivityIndicator size="large" color={colors.primary} style={styles.spinner} />
-      </View>
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#000000" />
+      <Animated.View
+        style={[
+          styles.content,
+          {
+            opacity: containerOpacity,
+            transform: [{ translateY: containerTranslateY }],
+          },
+        ]}
+      >
+        <Animated.Image
+          source={require("../assets/logo.png")}
+          style={[
+            styles.logo,
+            {
+              opacity: logoOpacity,
+              transform: [{ scale: logoScale }],
+            },
+          ]}
+          resizeMode="contain"
+        />
+      </Animated.View>
     </View>
   );
 }
@@ -41,32 +101,16 @@ export default function SplashScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#000000",
     alignItems: "center",
     justifyContent: "center",
   },
   content: {
     alignItems: "center",
-    padding: 24,
-  },
-  iconCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    alignItems: "center",
     justifyContent: "center",
-    marginBottom: 20,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: "900",
-    letterSpacing: -0.5,
-  },
-  tagline: {
-    fontSize: 14,
-    marginTop: 8,
-    textAlign: "center",
-  },
-  spinner: {
-    marginTop: 36,
+  logo: {
+    width: Math.min(width * 0.82, 340),
+    height: 120,
   },
 });

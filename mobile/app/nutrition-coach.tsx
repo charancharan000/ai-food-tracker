@@ -19,6 +19,8 @@ import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
 import { coachService, CoachChatMessage } from "../services/coachService";
+import { TypingDots } from "../components/TypingDots";
+import { AnimatedMessageRow } from "../components/AnimatedMessageRow";
 
 interface ChatMessage {
   id: string;
@@ -241,81 +243,92 @@ export default function NutritionCoachScreen() {
           {messages.map((m) => {
             const isUser = m.sender === "user";
             return (
-              <View
-                key={m.id}
-                style={[
-                  styles.messageBubbleWrap,
-                  isUser ? styles.userBubbleWrap : styles.coachBubbleWrap,
-                ]}
-              >
-                {!isUser && (
-                  <View style={[styles.coachAvatar, { backgroundColor: `${colors.primary}20` }]}>
-                    <Ionicons name="barbell" size={18} color={colors.primary} />
-                  </View>
-                )}
+              <AnimatedMessageRow key={m.id} isNew={m.time === "Now"}>
                 <View
                   style={[
-                    styles.bubble,
-                    isUser
-                      ? [styles.userBubble, { backgroundColor: colors.primary }]
-                      : [
-                          styles.coachBubble,
-                          { backgroundColor: colors.surface, borderColor: colors.border },
-                        ],
+                    styles.messageBubbleWrap,
+                    isUser ? styles.userBubbleWrap : styles.coachBubbleWrap,
                   ]}
                 >
-                  {m.imageUri && (
-                    <Image
-                      source={{ uri: m.imageUri }}
-                      style={styles.messageImage}
-                      resizeMode="cover"
-                    />
-                  )}
-                  {m.isLoggedMeal && (
-                    <View style={styles.mealBadge}>
-                      <Ionicons name="checkmark-circle" size={14} color="#10B981" />
-                      <Text style={styles.mealBadgeText}>Food Logged into Diary</Text>
+                  {!isUser && (
+                    <View style={[styles.coachAvatar, { backgroundColor: `${colors.primary}20` }]}>
+                      <Ionicons name="barbell" size={18} color={colors.primary} />
                     </View>
                   )}
-                  <Text
+                  <View
                     style={[
-                      styles.bubbleText,
-                      { color: isUser ? "#FFFFFF" : colors.text },
+                      styles.bubble,
+                      isUser
+                        ? [styles.userBubble, { backgroundColor: colors.primary }]
+                        : [
+                            styles.coachBubble,
+                            { backgroundColor: colors.surface, borderColor: colors.border },
+                          ],
                     ]}
                   >
-                    {m.text}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.timestampText,
-                      { color: isUser ? "rgba(255,255,255,0.7)" : colors.textMuted },
-                    ]}
-                  >
-                    {m.time}
-                  </Text>
+                    {m.imageUri && (
+                      <Image
+                        source={{ uri: m.imageUri }}
+                        style={styles.messageImage}
+                        resizeMode="cover"
+                      />
+                    )}
+                    {m.isLoggedMeal && (
+                      <View style={styles.mealBadge}>
+                        <Ionicons name="checkmark-circle" size={14} color="#10B981" />
+                        <Text style={styles.mealBadgeText}>Food Logged into Diary</Text>
+                      </View>
+                    )}
+                    <Text
+                      style={[
+                        styles.bubbleText,
+                        { color: isUser ? "#FFFFFF" : colors.text },
+                      ]}
+                    >
+                      {m.text}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.timestampText,
+                        { color: isUser ? "rgba(255,255,255,0.7)" : colors.textMuted },
+                      ]}
+                    >
+                      {m.time}
+                    </Text>
+                  </View>
                 </View>
-              </View>
+              </AnimatedMessageRow>
             );
           })}
 
           {loading && (
-            <View style={[styles.messageBubbleWrap, styles.coachBubbleWrap]}>
-              <View style={[styles.coachAvatar, { backgroundColor: `${colors.primary}20` }]}>
-                <Ionicons name="barbell" size={18} color={colors.primary} />
+            <AnimatedMessageRow isNew={true}>
+              <View style={[styles.messageBubbleWrap, styles.coachBubbleWrap]}>
+                <View style={[styles.coachAvatar, { backgroundColor: `${colors.primary}20` }]}>
+                  <Ionicons name="barbell" size={18} color={colors.primary} />
+                </View>
+                <View
+                  style={[
+                    styles.bubble,
+                    styles.coachBubble,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: colors.border,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
+                      paddingVertical: 12,
+                      paddingHorizontal: 16,
+                    },
+                  ]}
+                >
+                  <TypingDots color={colors.primary} size={7} />
+                  <Text style={[styles.bubbleText, { color: colors.textSecondary, fontSize: 13 }]}>
+                    Coach is thinking...
+                  </Text>
+                </View>
               </View>
-              <View
-                style={[
-                  styles.bubble,
-                  styles.coachBubble,
-                  { backgroundColor: colors.surface, borderColor: colors.border, flexDirection: "row", alignItems: "center", gap: 8 },
-                ]}
-              >
-                <ActivityIndicator size="small" color={colors.primary} />
-                <Text style={[styles.bubbleText, { color: colors.textSecondary }]}>
-                  Coach is thinking...
-                </Text>
-              </View>
-            </View>
+            </AnimatedMessageRow>
           )}
         </ScrollView>
 

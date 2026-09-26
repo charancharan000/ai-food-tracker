@@ -3,6 +3,7 @@ import { View, StyleSheet, Platform } from "react-native";
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../hooks/useTheme";
+import { AnimatedTabIcon } from "../../components/AnimatedTabIcon";
 
 export default function TabLayout() {
   const { colors, isDark } = useTheme();
@@ -38,7 +39,13 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? "home" : "home-outline"} size={22} color={color} />
+            <AnimatedTabIcon
+              name="home"
+              outlineName="home-outline"
+              focused={focused}
+              color={color}
+              size={22}
+            />
           ),
         }}
       />
@@ -48,7 +55,7 @@ export default function TabLayout() {
         options={{
           title: "Scan",
           tabBarLabel: () => null,
-          tabBarIcon: () => (
+          tabBarIcon: ({ focused }) => (
             <View
               style={[
                 styles.scanButton,
@@ -56,6 +63,7 @@ export default function TabLayout() {
                   backgroundColor: colors.primary,
                   borderColor: colors.background,
                   shadowColor: colors.primary,
+                  transform: [{ scale: focused ? 1.05 : 1.0 }],
                 },
               ]}
             >
@@ -70,7 +78,13 @@ export default function TabLayout() {
         options={{
           title: "Food Log",
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? "calendar" : "calendar-outline"} size={22} color={color} />
+            <AnimatedTabIcon
+              name="calendar"
+              outlineName="calendar-outline"
+              focused={focused}
+              color={color}
+              size={22}
+            />
           ),
         }}
       />
@@ -80,7 +94,13 @@ export default function TabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? "person" : "person-outline"} size={22} color={color} />
+            <AnimatedTabIcon
+              name="person"
+              outlineName="person-outline"
+              focused={focused}
+              color={color}
+              size={22}
+            />
           ),
         }}
       />

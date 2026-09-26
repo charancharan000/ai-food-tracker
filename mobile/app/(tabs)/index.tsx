@@ -22,6 +22,7 @@ import { MacroCard } from "../../components/MacroCard";
 import { MealCard } from "../../components/MealCard";
 import { WaterTrackerCard } from "../../components/WaterTrackerCard";
 import { ThemeToggle } from "../../components/ThemeToggle";
+import { DashboardSkeleton } from "../../components/SkeletonLoader";
 
 export default function HomeDashboardScreen() {
   const { user } = useAuth();
@@ -103,12 +104,7 @@ export default function HomeDashboardScreen() {
         showsVerticalScrollIndicator={false}
       >
         {loading && !refreshing ? (
-          <View style={styles.centerLoading}>
-            <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-              Loading...
-            </Text>
-          </View>
+          <DashboardSkeleton />
         ) : (
           <>
             <View

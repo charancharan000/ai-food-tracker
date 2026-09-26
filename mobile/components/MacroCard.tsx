@@ -10,7 +10,7 @@ interface MacroCardProps {
   unit?: string;
 }
 
-export const MacroCard: React.FC<MacroCardProps> = ({
+export const MacroCard: React.FC<MacroCardProps> = React.memo(({
   label,
   consumed,
   target,
@@ -27,7 +27,7 @@ export const MacroCard: React.FC<MacroCardProps> = ({
   useEffect(() => {
     Animated.timing(animWidth, {
       toValue: percentage,
-      duration: 850,
+      duration: 500,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
     }).start();
@@ -85,7 +85,7 @@ export const MacroCard: React.FC<MacroCardProps> = ({
       </Text>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   card: {

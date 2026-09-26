@@ -10,7 +10,7 @@ interface WaterTrackerCardProps {
   onLogged?: () => void;
 }
 
-export const WaterTrackerCard: React.FC<WaterTrackerCardProps> = ({
+export const WaterTrackerCard: React.FC<WaterTrackerCardProps> = React.memo(({
   consumedMl,
   targetMl,
   onLogged,
@@ -27,7 +27,7 @@ export const WaterTrackerCard: React.FC<WaterTrackerCardProps> = ({
   useEffect(() => {
     Animated.timing(animFill, {
       toValue: percentage,
-      duration: 800,
+      duration: 500,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
     }).start();
@@ -128,7 +128,7 @@ export const WaterTrackerCard: React.FC<WaterTrackerCardProps> = ({
       </View>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   card: {
