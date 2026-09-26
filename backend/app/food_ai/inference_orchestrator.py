@@ -259,6 +259,41 @@ from app.food_ai.nutrition_engine.curry_recipes import (
     Section70CalorieUncertaintyOutput,
     Section88CurrySingleOutput
 )
+from app.food_ai.taxonomy.vegetarian_master_taxonomy import (
+    get_veg_food_class,
+    resolve_veg_food_by_name,
+    VegetarianFoodClassRecord
+)
+from app.food_ai.datasets.vegetarian_hard_negatives import (
+    VEGETARIAN_CONFUSION_REGISTRY,
+    disambiguate_vegetarian_pair,
+    KeralaSadyaItemDiscriminator,
+    PaneerTofuPotatoDiscriminator,
+    CountableVegetarianItemCounter,
+    Section75NonNegotiableVegetarianVerifier
+)
+from app.food_ai.portion_engine.vegetarian_portions import (
+    VegetarianPortionEngine,
+    QualitativeVegetarianOilEstimator,
+    VegetarianComponentMassSplitter
+)
+from app.food_ai.datasets.vegetarian_composite_decomposer import (
+    SouthIndianVegetarianThaliDecomposer,
+    NorthIndianVegetarianThaliDecomposer,
+    KeralaSadyaDecomposer,
+    GujaratiVegetarianThaliDecomposer,
+    VegetarianThaliDecompositionResult
+)
+from app.food_ai.nutrition_engine.vegetarian_recipes import (
+    VegetarianRecipeNutritionCalculator,
+    Section55VegetarianAnnotation,
+    Section42VegetarianNutritionOutput,
+    Section49UnknownVegetarianOutput,
+    Section68FinalAppVegetarianOutput,
+    Section67CalorieUncertaintyOutput,
+    Section88VegetarianSingleOutput,
+    Section51UserCorrectionRecord
+)
 
 
 
@@ -2000,6 +2035,172 @@ class ProductionInferenceOrchestrator:
         """
         return Section73NonNegotiableCurryVerifier.verify_prediction(
             candidate_dish=candidate_curry,
+            visual_features=visual_features
+        )
+
+    # =========================================================================
+    # PART 12: INDIAN VEGETARIAN METHODS
+    # =========================================================================
+
+    def analyze_vegetarian_dish(
+        self,
+        dish_name: str,
+        portion_category: str = "Medium",
+        visual_features: Optional[Dict[str, Any]] = None
+    ) -> Section88VegetarianSingleOutput:
+        """
+        Analyzes an Indian vegetarian dish and outputs Section 88 single vegetarian output.
+        """
+        return VegetarianRecipeNutritionCalculator.generate_section_88_single_output(
+            dish_name=dish_name,
+            portion_category=portion_category,
+            visual_features=visual_features
+        )
+
+    def analyze_south_indian_veg_thali(self) -> VegetarianThaliDecompositionResult:
+        """
+        Deconstructs Traditional South Indian Vegetarian Thali into constituent items (Section 58).
+        """
+        return SouthIndianVegetarianThaliDecomposer.decompose()
+
+    def analyze_north_indian_veg_thali(self) -> VegetarianThaliDecompositionResult:
+        """
+        Deconstructs North Indian Vegetarian Thali into constituent items (Section 58).
+        """
+        return NorthIndianVegetarianThaliDecomposer.decompose()
+
+    def analyze_kerala_sadya(self) -> VegetarianThaliDecompositionResult:
+        """
+        Deconstructs Kerala Onam Sadya Feast verifying Avial != Thoran != Olan != Erissery != Kalan (Section 6 & 58).
+        """
+        return KeralaSadyaDecomposer.decompose()
+
+    def analyze_gujarati_vegetarian_thali(self) -> VegetarianThaliDecompositionResult:
+        """
+        Deconstructs Gujarati Vegetarian Thali into constituent items (Section 58).
+        """
+        return GujaratiVegetarianThaliDecomposer.decompose()
+
+    def generate_vegetarian_section_55_annotation(
+        self,
+        image_id: str,
+        dish_name: str,
+        region: str = "Tamil Nadu",
+        portion_category: str = "Medium",
+        bbox: Optional[List[int]] = None
+    ) -> Section55VegetarianAnnotation:
+        """
+        Generates Section 55 Detailed Vegetarian Image Annotation schema.
+        """
+        return VegetarianRecipeNutritionCalculator.generate_section_55_annotation(
+            image_id=image_id,
+            dish_name=dish_name,
+            region=region,
+            portion_category=portion_category,
+            bbox=bbox
+        )
+
+    def generate_vegetarian_section_42_output(
+        self,
+        dish_name: str,
+        portion_category: str = "Medium"
+    ) -> Section42VegetarianNutritionOutput:
+        """
+        Generates Section 42 Standard Vegetarian Nutrition Output schema.
+        """
+        return VegetarianRecipeNutritionCalculator.generate_section_42_output(
+            dish_name=dish_name,
+            portion_category=portion_category
+        )
+
+    def generate_vegetarian_section_49_unknown_fallback(
+        self,
+        mode: str = "general"
+    ) -> Section49UnknownVegetarianOutput:
+        """
+        Generates Section 49 Unknown Vegetarian Fallback schema.
+        """
+        return VegetarianRecipeNutritionCalculator.generate_section_49_unknown_fallback(mode=mode)
+
+    def generate_vegetarian_section_68_app_output(
+        self,
+        dishes: List[Tuple[str, str, int]]
+    ) -> Section68FinalAppVegetarianOutput:
+        """
+        Generates Section 68 Final App Multi-Item Output schema.
+        """
+        return VegetarianRecipeNutritionCalculator.generate_section_68_app_output(dishes=dishes)
+
+    def generate_vegetarian_section_67_uncertainty_output(
+        self,
+        dish_name: str,
+        portion_category: str = "Medium"
+    ) -> Section67CalorieUncertaintyOutput:
+        """
+        Generates Section 67 Calorie Uncertainty Output.
+        """
+        return VegetarianRecipeNutritionCalculator.generate_section_67_uncertainty_output(
+            dish_name=dish_name,
+            portion_category=portion_category
+        )
+
+    def record_vegetarian_user_correction(
+        self,
+        original_prediction: str,
+        user_correction: str,
+        image_reference: str,
+        region: Optional[str] = None,
+        portion_correction_g: Optional[float] = None
+    ) -> Section51UserCorrectionRecord:
+        """
+        Records user feedback/correction for active learning (Section 51).
+        """
+        return VegetarianRecipeNutritionCalculator.record_user_correction(
+            original_prediction=original_prediction,
+            user_correction=user_correction,
+            image_reference=image_reference,
+            region=region,
+            portion_correction_g=portion_correction_g
+        )
+
+    def disambiguate_vegetarian_pair(
+        self,
+        pair_id: str,
+        visual_features: Dict[str, Any]
+    ) -> Tuple[str, float, str]:
+        """
+        Disambiguates high-confusion vegetarian candidate pairs (Section 48 & 59).
+        """
+        return disambiguate_vegetarian_pair(pair_id, visual_features)
+
+    def discriminate_kerala_sadya_items(
+        self,
+        visual_cues: Dict[str, Any]
+    ) -> Tuple[str, float, str]:
+        """
+        Strictly enforces Section 6: Avial != Thoran != Olan != Erissery != Kalan != Pulissery.
+        """
+        return KeralaSadyaItemDiscriminator.discriminate(visual_cues)
+
+    def verify_paneer_vs_tofu_vs_potato(
+        self,
+        visual_cues: Dict[str, Any]
+    ) -> Tuple[str, float, str]:
+        """
+        Enforces Sections 13, 14, 17, 32: Discriminate white cubes (Paneer vs Tofu vs Potato).
+        """
+        return PaneerTofuPotatoDiscriminator.classify_white_cube(visual_cues)
+
+    def verify_section_75_vegetarian_rule(
+        self,
+        candidate_dish: str,
+        visual_features: Dict[str, Any]
+    ) -> Tuple[bool, str]:
+        """
+        Enforces Section 75 Non-Negotiable Vegetarian Quality Rules.
+        """
+        return Section75NonNegotiableVegetarianVerifier.verify_prediction(
+            candidate_dish=candidate_dish,
             visual_features=visual_features
         )
 
