@@ -183,7 +183,12 @@ from app.food_ai.datasets.rice_composite_decomposer import (
 from app.food_ai.nutrition_engine.rice_recipes import (
     RiceRecipeNutritionCalculator,
     Section78RiceSingleOutput,
-    Section78RiceMultiOutput
+    Section78RiceMultiOutput,
+    Section60UnknownRiceOutput,
+    Section68BiryaniOutput,
+    Section69VarietyRiceOutput,
+    Section70PlateItem,
+    Section70MultiFoodPlateOutput
 )
 from app.food_ai.taxonomy.bread_master_taxonomy import (
     get_bread_food_class,
@@ -1414,6 +1419,76 @@ class ProductionInferenceOrchestrator:
         return RiceRecipeNutritionCalculator.calculate_composite_plate(
             plate_title=plate_title,
             items=items
+        )
+
+    def generate_rice_section_68_biryani(
+        self,
+        food_name: str = "Mutton Biryani",
+        style: Optional[str] = None,
+        style_confidence: float = 0.60,
+        estimated_weight_g: float = 420.0,
+        meat_piece_count: Optional[int] = 3,
+        overall_confidence: float = 0.91,
+        cues: Optional[Dict[str, Any]] = None
+    ) -> Section68BiryaniOutput:
+        """
+        Generates Section 68 compliant Final Output Example — Biryani.
+        Identifies exact regional style ONLY when evidence supports it.
+        """
+        return RiceRecipeNutritionCalculator.generate_section_68_biryani(
+            food_name=food_name,
+            style=style,
+            style_confidence=style_confidence,
+            estimated_weight_g=estimated_weight_g,
+            meat_piece_count=meat_piece_count,
+            overall_confidence=overall_confidence,
+            cues=cues
+        )
+
+    def generate_rice_section_69_variety_rice(
+        self,
+        food_name: str = "Lemon Rice",
+        estimated_weight_g: float = 280.0,
+        confidence: float = 0.88,
+        components: Optional[List[str]] = None,
+        cues: Optional[Dict[str, Any]] = None
+    ) -> Section69VarietyRiceOutput:
+        """
+        Generates Section 69 compliant Final Output Example — Variety Rice.
+        """
+        return RiceRecipeNutritionCalculator.generate_section_69_variety_rice(
+            food_name=food_name,
+            estimated_weight_g=estimated_weight_g,
+            confidence=confidence,
+            components=components,
+            cues=cues
+        )
+
+    def generate_rice_section_70_multi_food_plate(
+        self,
+        meal_type: str = "Indian Rice Meal",
+        items_spec: Optional[List[Dict[str, Any]]] = None
+    ) -> Section70MultiFoodPlateOutput:
+        """
+        Generates Section 70 compliant Multi-Food Plate Output.
+        Strictly prevents collapsing Steamed Rice + Fish Curry into Fish Biryani!
+        """
+        return RiceRecipeNutritionCalculator.generate_section_70_multi_food_plate(
+            meal_type=meal_type,
+            items_spec=items_spec
+        )
+
+    def generate_rice_section_60_unknown_fallback(
+        self,
+        confidence: float = 0.29,
+        reason: str = "Visual evidence insufficient to classify specific rice dish without ambiguity"
+    ) -> Section60UnknownRiceOutput:
+        """
+        Generates Section 60 compliant Unknown Rice Food System Fallback.
+        """
+        return RiceRecipeNutritionCalculator.generate_section_60_unknown_fallback(
+            confidence=confidence,
+            reason=reason
         )
 
     # =========================================================================

@@ -105,8 +105,101 @@ RICE_CONFUSION_REGISTRY: Dict[str, RiceConfusionPair] = {
         ],
         a_visual_cues={"grain_color": "uniform_bright_red_orange", "protein": "none", "tempering": ["mustard", "curry_leaves"]},
         b_visual_cues={"grain_color": "marbled_saffron_white", "protein": "chicken_or_mutton_pieces", "tempering": ["whole_garam_masala", "birista"]}
+    ),
+    "green_rice_vs_mint_pulao": RiceConfusionPair(
+        pair_id="green_rice_vs_mint_pulao",
+        dish_a="Pudina (Mint) Rice",
+        dish_b="Palak / Coriander / Gongura Rice",
+        distinguishing_features=[
+            "Herb base: Aromatic spearmint/pudina puree with whole garam masala vs deep green iron-rich spinach puree (palak) or tangy sorrel leaf (gongura)",
+            "Visual texture: Lighter bright olive green with visible whole cloves/cardamom vs dark emerald green smooth coating in palak rice",
+            "Rule 74 check: Never classify all green rice as mint rice purely from color"
+        ],
+        a_visual_cues={"herb_type": "mint_pudina", "color_shade": "olive_green", "whole_spices": ["cloves", "cardamom"]},
+        b_visual_cues={"herb_type": "palak_or_gongura", "color_shade": "dark_emerald_green", "whole_spices": []}
+    ),
+    "creamy_rice_vs_kheer": RiceConfusionPair(
+        pair_id="creamy_rice_vs_kheer",
+        dish_a="Rice Kheer / Payasam",
+        dish_b="Curd Rice / Ven Pongal",
+        distinguishing_features=[
+            "Sweet vs Savory: Sweet thickened milk base with slivered pistachios, saffron strands, and cardamom powder in Kheer",
+            "Savory tempering: Spluttered mustard seeds, curry leaves, and ginger in Curd Rice; whole black peppercorns and ghee in Pongal",
+            "Rule 74 check: Never classify every creamy rice dish as kheer purely from creamy appearance"
+        ],
+        a_visual_cues={"flavor_profile": "sweet_milk_dessert", "garnishes": ["pistachios", "saffron_strands", "cardamom"]},
+        b_visual_cues={"flavor_profile": "savory_tempered", "garnishes": ["mustard_seeds", "curry_leaves", "black_peppercorns"]}
     )
 }
+
+
+class Section74AntiBiasVerifier:
+    """
+    Implements Section 74 Non-Negotiable Quality Rules:
+    - Never classify all mixed rice as biryani
+    - Never classify all yellow rice as lemon rice
+    - Never classify all green rice as mint rice
+    - Never classify all red rice as tomato rice
+    - Never classify rice + meat as biryani
+    - Never classify rice + vegetables as pulao
+    - Never classify rice + dal as khichdi
+    - Never classify every soft rice dish as pongal
+    - Never classify every creamy rice dish as kheer
+    """
+    @staticmethod
+    def verify_color_dish_hypothesis(
+        color_detected: str,
+        hypothesized_dish: str,
+        visual_cues: Dict[str, Any]
+    ) -> Tuple[bool, str]:
+        color = color_detected.lower()
+        hyp = hypothesized_dish.lower()
+
+        # Rule: Yellow rice != Lemon rice
+        if "yellow" in color and ("lemon" in hyp or "chitranna" in hyp):
+            has_peanuts = visual_cues.get("has_peanuts", False) or "peanuts" in visual_cues.get("garnishes", [])
+            has_mustard = visual_cues.get("has_mustard_seeds", False) or "mustard" in visual_cues.get("garnishes", [])
+            if not has_peanuts and not has_mustard:
+                return False, "Rule 74: Yellow color alone is insufficient to classify as Lemon Rice without mustard seeds or peanuts (could be turmeric rice or yellow pulao)."
+
+        # Rule: Green rice != Mint rice
+        if "green" in color and ("mint" in hyp or "pudina" in hyp):
+            has_mint_leaf = visual_cues.get("has_mint_leaf_bits", False)
+            if not has_mint_leaf and visual_cues.get("herb_profile") != "mint":
+                return False, "Rule 74: Green color alone is insufficient to classify as Mint Rice (could be spinach/palak, coriander, or gongura rice)."
+
+        # Rule: Red rice != Tomato rice
+        if "red" in color and "tomato" in hyp:
+            has_tomato_pieces = visual_cues.get("has_tomato_pieces", False)
+            has_tempering = visual_cues.get("has_mustard_curry_leaf_tempering", False)
+            if not has_tomato_pieces and not has_tempering:
+                return False, "Rule 74: Red color alone is insufficient to classify as Tomato Rice (could be Schezwan fried rice, beetroot rice, or red grain rice)."
+
+        # Rule: Creamy rice != Kheer
+        if "creamy" in color and ("kheer" in hyp or "payasam" in hyp):
+            is_dessert = visual_cues.get("is_sweet_dessert", False)
+            has_nuts_saffron = visual_cues.get("has_nuts_saffron", False)
+            if not is_dessert and not has_nuts_saffron:
+                return False, "Rule 74: Creamy texture alone is insufficient to classify as Kheer (could be curd rice, ven pongal, or rice porridge)."
+
+        return True, "Color and feature evidence aligns with hypothesis."
+
+    @staticmethod
+    def verify_rice_and_curry_meal(
+        has_separated_rice: bool,
+        has_separated_curry: bool,
+        curry_type: str
+    ) -> Tuple[bool, str]:
+        """
+        Prevents collapsing plain rice + curry into Biryani or Khichdi.
+        """
+        if has_separated_rice and has_separated_curry:
+            if "chicken" in curry_type.lower() or "mutton" in curry_type.lower() or "fish" in curry_type.lower():
+                return False, "Rule 74: Rice served with meat/fish curry must never be classified as Biryani. Must output separate meal items."
+            if "dal" in curry_type.lower():
+                return False, "Rule 74: Rice served with dal must never be classified as Khichdi. Must output separate meal items."
+        return True, "Valid dish representation."
+
 
 
 def disambiguate_rice_pair(

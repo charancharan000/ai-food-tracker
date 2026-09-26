@@ -43,7 +43,8 @@ from app.food_ai.datasets.rice_hard_negatives import (
     disambiguate_rice_pair,
     PlainRiceCurryVsBiryaniDiscriminator,
     HandiPotDetector,
-    BiryaniMeatEggCounter
+    BiryaniMeatEggCounter,
+    Section74AntiBiasVerifier
 )
 from app.food_ai.datasets.rice_composite_decomposer import (
     BiryaniPlateDecomposer,
@@ -60,7 +61,12 @@ from app.food_ai.portion_engine.rice_portions import (
 from app.food_ai.nutrition_engine.rice_recipes import (
     RiceRecipeNutritionCalculator,
     Section78RiceSingleOutput,
-    Section78RiceMultiOutput
+    Section78RiceMultiOutput,
+    Section60UnknownRiceOutput,
+    Section68BiryaniOutput,
+    Section69VarietyRiceOutput,
+    Section70PlateItem,
+    Section70MultiFoodPlateOutput
 )
 from app.food_ai.inference_orchestrator import production_orchestrator
 
@@ -446,3 +452,176 @@ def test_orchestrator_multi_food_rice_plate_analysis():
     assert "–" in res.total_estimated_calories_range
     assert res.total_calories_low < res.total_calories_expected < res.total_calories_high
     assert res.overall_confidence == "High"
+
+
+# =============================================================================
+# 9. SECTIONS 60, 68, 69, 70, 74 SPECIFICATION VERIFICATION TESTS
+# =============================================================================
+
+def test_section_68_biryani_output_unknown_vs_exact_style():
+    """
+    Verifies Section 68 Final Output Example — Biryani:
+    - If regional style cannot be proven with high confidence (>= 0.85),
+      it MUST fall back to 'Regional Style Unknown'.
+    - If style evidence is strong (e.g. Hyderabadi), style is emitted.
+    - Accurately reports meat_piece_count, calorie_range_kcal, protein_range_g.
+    """
+    # Case 1: Ambiguous style evidence (< 0.85) -> "Regional Style Unknown"
+    res_unknown_style: Section68BiryaniOutput = production_orchestrator.generate_rice_section_68_biryani(
+        food_name="Mutton Biryani",
+        style="Hyderabadi",
+        style_confidence=0.62,  # Insufficient evidence
+        estimated_weight_g=420.0,
+        meat_piece_count=3,
+        overall_confidence=0.91
+    )
+    assert res_unknown_style.food_name == "Mutton Biryani"
+    assert res_unknown_style.style == "Regional Style Unknown"
+    assert res_unknown_style.estimated_weight_g == 420.0
+    assert res_unknown_style.meat_piece_count == 3
+    assert res_unknown_style.confidence == 0.91
+    assert len(res_unknown_style.calorie_range_kcal) == 2
+    assert res_unknown_style.calorie_range_kcal[0] < res_unknown_style.calorie_range_kcal[1]
+    assert len(res_unknown_style.protein_range_g) == 2
+
+    # Case 2: Strong style evidence (>= 0.85) -> "Hyderabadi"
+    res_proven_style: Section68BiryaniOutput = production_orchestrator.generate_rice_section_68_biryani(
+        food_name="Chicken Biryani",
+        style="Hyderabadi",
+        style_confidence=0.94,
+        estimated_weight_g=450.0,
+        meat_piece_count=2,
+        overall_confidence=0.95
+    )
+    assert res_proven_style.food_name == "Chicken Biryani"
+    assert res_proven_style.style == "Hyderabadi"
+    assert res_proven_style.meat_piece_count == 2
+    assert res_proven_style.confidence == 0.95
+
+
+def test_section_69_variety_rice_output_lemon_rice():
+    """
+    Verifies Section 69 Final Output Example — Variety Rice:
+    food_name: "Lemon Rice", estimated_weight_g: 280, confidence: 0.88,
+    components: ["rice", "lemon-based seasoning", "peanuts", "curry leaves"].
+    """
+    res: Section69VarietyRiceOutput = production_orchestrator.generate_rice_section_69_variety_rice(
+        food_name="Lemon Rice",
+        estimated_weight_g=280.0,
+        confidence=0.88
+    )
+    assert res.food_name == "Lemon Rice"
+    assert res.estimated_weight_g == 280.0
+    assert res.confidence == 0.88
+    assert "rice" in res.components
+    assert "lemon-based seasoning" in res.components
+    assert "peanuts" in res.components
+    assert "curry leaves" in res.components
+
+
+def test_section_70_multi_food_plate_never_converted_to_biryani():
+    """
+    Verifies Section 70 Final Output — Multi-Food Plate:
+    Steamed Rice 250g, Fish Curry 140g, Dal 100g, Vegetable Poriyal 80g.
+    Strictly never converts or collapses this meal into Fish Biryani!
+    """
+    res: Section70MultiFoodPlateOutput = production_orchestrator.generate_rice_section_70_multi_food_plate(
+        meal_type="Indian Rice Meal",
+        items_spec=[
+            {"food_name": "Steamed Rice", "weight_g": 250.0, "confidence": 0.99},
+            {"food_name": "Fish Curry", "weight_g": 140.0, "confidence": 0.88},
+            {"food_name": "Dal", "weight_g": 100.0, "confidence": 0.91},
+            {"food_name": "Vegetable Poriyal", "weight_g": 80.0, "confidence": 0.78}
+        ]
+    )
+    assert res.meal_type == "Indian Rice Meal"
+    assert len(res.items) == 4
+    assert res.items[0].food_name == "Steamed Rice"
+    assert res.items[0].weight_g == 250.0
+    assert res.items[1].food_name == "Fish Curry"
+    assert res.items[1].weight_g == 140.0
+    assert res.total_weight_g == 570.0
+    assert res.non_monolithic_rule_enforced is True
+
+
+def test_section_60_unknown_rice_food_system_fallback():
+    """
+    Verifies Section 60: Unknown Rice Food System Fallback
+    If uncertain, outputs:
+    food_family: "Rice-Based Food"
+    specific_dish: "Unknown"
+    confidence: 0.29
+    """
+    res: Section60UnknownRiceOutput = production_orchestrator.generate_rice_section_60_unknown_fallback(
+        confidence=0.29
+    )
+    assert res.food_family == "Rice-Based Food"
+    assert res.specific_dish == "Unknown"
+    assert res.confidence == 0.29
+    assert "User confirmation" in res.user_action_required
+
+
+def test_section_74_non_negotiable_anti_bias_rules():
+    """
+    Verifies Section 74 Non-Negotiable Rules:
+    - Never classify yellow rice as lemon rice purely from color
+    - Never classify green rice as mint rice purely from color
+    - Never classify red rice as tomato rice purely from color
+    - Never classify creamy rice as kheer purely from creaminess
+    - Never classify rice + meat curry as biryani
+    - Never classify rice + dal as khichdi
+    """
+    # 1. Yellow rice without peanuts/mustard seeds rejected for lemon rice
+    ok, reason = Section74AntiBiasVerifier.verify_color_dish_hypothesis(
+        color_detected="yellow",
+        hypothesized_dish="Lemon Rice",
+        visual_cues={"has_peanuts": False, "has_mustard_seeds": False}
+    )
+    assert ok is False
+    assert "Yellow color alone is insufficient" in reason
+
+    # 2. Green rice without mint leaf bits rejected for mint rice
+    ok, reason = Section74AntiBiasVerifier.verify_color_dish_hypothesis(
+        color_detected="green",
+        hypothesized_dish="Mint Rice",
+        visual_cues={"has_mint_leaf_bits": False}
+    )
+    assert ok is False
+    assert "Green color alone is insufficient" in reason
+
+    # 3. Red rice without tomato pieces or tempering rejected for tomato rice
+    ok, reason = Section74AntiBiasVerifier.verify_color_dish_hypothesis(
+        color_detected="red",
+        hypothesized_dish="Tomato Rice",
+        visual_cues={"has_tomato_pieces": False, "has_mustard_curry_leaf_tempering": False}
+    )
+    assert ok is False
+    assert "Red color alone is insufficient" in reason
+
+    # 4. Creamy rice without sweet dessert profile rejected for kheer
+    ok, reason = Section74AntiBiasVerifier.verify_color_dish_hypothesis(
+        color_detected="creamy",
+        hypothesized_dish="Rice Kheer",
+        visual_cues={"is_sweet_dessert": False, "has_nuts_saffron": False}
+    )
+    assert ok is False
+    assert "Creamy texture alone is insufficient" in reason
+
+    # 5. Plain rice + chicken curry rejected from being collapsed into biryani
+    ok, reason = Section74AntiBiasVerifier.verify_rice_and_curry_meal(
+        has_separated_rice=True,
+        has_separated_curry=True,
+        curry_type="chicken curry"
+    )
+    assert ok is False
+    assert "must never be classified as Biryani" in reason
+
+    # 6. Plain rice + dal rejected from being collapsed into khichdi
+    ok, reason = Section74AntiBiasVerifier.verify_rice_and_curry_meal(
+        has_separated_rice=True,
+        has_separated_curry=True,
+        curry_type="dal"
+    )
+    assert ok is False
+    assert "must never be classified as Khichdi" in reason
+

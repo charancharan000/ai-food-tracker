@@ -79,6 +79,72 @@ class Section78RiceMultiOutput(BaseModel):
     overall_confidence_score: float
 
 
+# =============================================================================
+# SECTIONS 60, 68, 69, 70 — SPEC-ALIGNED SCHEMAS
+# =============================================================================
+
+class Section60UnknownRiceOutput(BaseModel):
+    """
+    Section 60: Unknown Rice Food System Fallback
+    If uncertain, never force Biryani merely because rice contains meat or vegetables.
+    """
+    food_family: str = "Rice-Based Food"
+    specific_dish: str = "Unknown"
+    confidence: float = 0.29
+    reason: str = "Visual evidence insufficient to classify specific rice dish without ambiguity"
+    user_action_required: str = "User confirmation or photo retake needed"
+
+
+class Section68BiryaniOutput(BaseModel):
+    """
+    Section 68: Final Output Example — Biryani
+    The system should identify the exact regional style ONLY when evidence supports it.
+    If ambiguous or confidence < 0.85, style is 'Regional Style Unknown'.
+    """
+    food_name: str
+    style: str
+    estimated_weight_g: float
+    meat_piece_count: Optional[int] = None
+    confidence: float
+    calorie_range_kcal: List[int]
+    protein_range_g: List[int]
+    carbs_range_g: Optional[List[int]] = None
+    fat_range_g: Optional[List[int]] = None
+    uncertainty_note: Optional[str] = None
+
+
+class Section69VarietyRiceOutput(BaseModel):
+    """
+    Section 69: Final Output Example — Variety Rice
+    Outputs verified food name, portion, confidence, and identified visual components.
+    """
+    food_name: str
+    estimated_weight_g: float
+    confidence: float
+    components: List[str]
+    calorie_range_kcal: Optional[List[int]] = None
+    protein_range_g: Optional[List[int]] = None
+
+
+class Section70PlateItem(BaseModel):
+    food_name: str
+    weight_g: float
+    confidence: float
+
+
+class Section70MultiFoodPlateOutput(BaseModel):
+    """
+    Section 70: Final Output — Multi-Food Plate
+    Deconstructs multi-food plates (e.g. Steamed Rice + Fish Curry + Dal + Poriyal).
+    Strictly never collapses or converts this meal into Fish Biryani!
+    """
+    meal_type: str = "Indian Rice Meal"
+    items: List[Section70PlateItem]
+    total_weight_g: Optional[float] = None
+    total_calories_range_kcal: Optional[List[int]] = None
+    non_monolithic_rule_enforced: bool = True
+
+
 class RiceRecipeNutritionCalculator:
     """
     Implements Sections 64, 65, 78:
@@ -319,3 +385,157 @@ class RiceRecipeNutritionCalculator:
             overall_confidence="High" if len(items) > 0 else "Low",
             overall_confidence_score=0.93
         )
+
+    @classmethod
+    def generate_section_68_biryani(
+        cls,
+        food_name: str = "Mutton Biryani",
+        style: Optional[str] = None,
+        style_confidence: float = 0.60,
+        estimated_weight_g: float = 420.0,
+        meat_piece_count: Optional[int] = 3,
+        overall_confidence: float = 0.91,
+        cues: Optional[Dict[str, Any]] = None
+    ) -> Section68BiryaniOutput:
+        """
+        Generates Section 68 Final Output Example — Biryani.
+        Enforces Section 68 & 74 rules: identifies exact regional style ONLY when
+        evidence strongly supports it (style_confidence >= 0.85).
+        Otherwise falls back to 'Regional Style Unknown'.
+        """
+        if not style or style_confidence < 0.85:
+            resolved_style = "Regional Style Unknown"
+        else:
+            resolved_style = style
+
+        single = cls.calculate_single_dish(
+            food_identifier=food_name,
+            custom_weight_g=estimated_weight_g,
+            visible_meat_pieces=meat_piece_count,
+            visual_cues=cues
+        )
+        cals_low = int(round(single.calories_low / 10.0) * 10)
+        cals_high = int(round(single.calories_high / 10.0) * 10)
+        pro_low = int(round(single.protein_g * 0.80))
+        pro_high = int(round(single.protein_g * 1.20))
+
+        return Section68BiryaniOutput(
+            food_name=food_name,
+            style=resolved_style,
+            estimated_weight_g=round(estimated_weight_g, 1),
+            meat_piece_count=meat_piece_count,
+            confidence=round(overall_confidence, 2),
+            calorie_range_kcal=[cals_low, cals_high],
+            protein_range_g=[pro_low, pro_high],
+            carbs_range_g=[int(round(single.carbs_g * 0.85)), int(round(single.carbs_g * 1.15))],
+            fat_range_g=[int(round(single.fat_g * 0.80)), int(round(single.fat_g * 1.25))],
+            uncertainty_note=single.uncertainty_reason
+        )
+
+    @classmethod
+    def generate_section_69_variety_rice(
+        cls,
+        food_name: str = "Lemon Rice",
+        estimated_weight_g: float = 280.0,
+        confidence: float = 0.88,
+        components: Optional[List[str]] = None,
+        cues: Optional[Dict[str, Any]] = None
+    ) -> Section69VarietyRiceOutput:
+        """
+        Generates Section 69 Final Output Example — Variety Rice.
+        Outputs food_name, estimated_weight_g, confidence, and verified visual components.
+        """
+        if components is None:
+            name_lower = food_name.lower()
+            if "lemon" in name_lower or "chitranna" in name_lower or "elamichai" in name_lower:
+                components = ["rice", "lemon-based seasoning", "peanuts", "curry leaves"]
+            elif "tamarind" in name_lower or "pulihora" in name_lower or "puliyodarai" in name_lower:
+                components = ["rice", "tamarind pulp seasoning", "peanuts", "chana dal", "curry leaves"]
+            elif "curd" in name_lower or "thayir" in name_lower or "daddojanam" in name_lower:
+                components = ["rice", "curd / yogurt", "mustard seeds", "green chillies", "curry leaves"]
+            elif "tomato" in name_lower or "thakkali" in name_lower:
+                components = ["rice", "tomato-onion masala", "spices", "curry leaves"]
+            elif "coconut" in name_lower or "thengai" in name_lower:
+                components = ["rice", "fresh grated coconut", "cashews", "curry leaves"]
+            elif "pudina" in name_lower or "mint" in name_lower:
+                components = ["rice", "mint leaves paste", "spices", "whole aromatics"]
+            elif "gongura" in name_lower:
+                components = ["rice", "gongura (sorrel leaves) paste", "red chillies", "garlic"]
+            else:
+                components = ["rice", "regional tempering", "aromatics"]
+
+        single = cls.calculate_single_dish(
+            food_identifier=food_name,
+            custom_weight_g=estimated_weight_g,
+            visual_cues=cues
+        )
+        cals_low = int(round(single.calories_low / 10.0) * 10)
+        cals_high = int(round(single.calories_high / 10.0) * 10)
+        pro_low = int(round(single.protein_g * 0.85))
+        pro_high = int(round(single.protein_g * 1.15))
+
+        return Section69VarietyRiceOutput(
+            food_name=food_name,
+            estimated_weight_g=round(estimated_weight_g, 1),
+            confidence=round(confidence, 2),
+            components=components,
+            calorie_range_kcal=[cals_low, cals_high],
+            protein_range_g=[pro_low, pro_high]
+        )
+
+    @classmethod
+    def generate_section_70_multi_food_plate(
+        cls,
+        meal_type: str = "Indian Rice Meal",
+        items_spec: Optional[List[Dict[str, Any]]] = None
+    ) -> Section70MultiFoodPlateOutput:
+        """
+        Generates Section 70 Final Output — Multi-Food Plate.
+        Never collapses separate items (e.g. Steamed Rice + Fish Curry + Dal + Poriyal) into Fish Biryani!
+        """
+        if items_spec is None:
+            items_spec = [
+                {"food_name": "Steamed Rice", "weight_g": 250.0, "confidence": 0.99},
+                {"food_name": "Fish Curry", "weight_g": 140.0, "confidence": 0.88},
+                {"food_name": "Dal", "weight_g": 100.0, "confidence": 0.91},
+                {"food_name": "Vegetable Poriyal", "weight_g": 80.0, "confidence": 0.78}
+            ]
+
+        items: List[Section70PlateItem] = [
+            Section70PlateItem(
+                food_name=it["food_name"],
+                weight_g=float(it["weight_g"]),
+                confidence=round(float(it["confidence"]), 2)
+            )
+            for it in items_spec
+        ]
+
+        total_weight = sum(it.weight_g for it in items)
+        total_cals_min = int(round(total_weight * 1.1))
+        total_cals_max = int(round(total_weight * 1.7))
+
+        return Section70MultiFoodPlateOutput(
+            meal_type=meal_type,
+            items=items,
+            total_weight_g=round(total_weight, 1),
+            total_calories_range_kcal=[total_cals_min, total_cals_max],
+            non_monolithic_rule_enforced=True
+        )
+
+    @classmethod
+    def generate_section_60_unknown_fallback(
+        cls,
+        confidence: float = 0.29,
+        reason: str = "Visual evidence insufficient to classify specific rice dish without ambiguity"
+    ) -> Section60UnknownRiceOutput:
+        """
+        Generates Section 60 Unknown Rice Food System Fallback.
+        """
+        return Section60UnknownRiceOutput(
+            food_family="Rice-Based Food",
+            specific_dish="Unknown",
+            confidence=round(confidence, 2),
+            reason=reason,
+            user_action_required="User confirmation or photo retake needed"
+        )
+
