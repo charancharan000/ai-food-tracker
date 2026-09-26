@@ -366,6 +366,45 @@ from app.food_ai.nutrition_engine.sweets_recipes import (
     Section88SweetSingleOutput,
     Section81FinalAppSweetOutput
 )
+from app.food_ai.taxonomy.snacks_tiffin_master_taxonomy import (
+    get_snack_record_by_id,
+    resolve_snack_alias,
+    SnackFoodClassRecord,
+    SnackTiffinHierarchy,
+    SNACKS_TAXONOMY_REGISTRY
+)
+from app.food_ai.datasets.snacks_hard_negatives import (
+    SNACKS_CONFUSION_REGISTRY,
+    disambiguate_snack_pair,
+    DhoklaVsKhamanVerifier,
+    SamosaVsKachoriVerifier,
+    VadaVsBondaVerifier,
+    Section74NonNegotiableSnackVerifier
+)
+from app.food_ai.portion_engine.snacks_portions import (
+    SNACK_PORTION_DATABASE,
+    CountablePieceEstimator,
+    QualitativeOilEstimator,
+    TwoPhotoPortionMode
+)
+from app.food_ai.datasets.snacks_composite_decomposer import (
+    TiffinComboDecomposer,
+    SamosaPlateDecomposer,
+    PaniPuriAssemblyDecomposer,
+    AlooTikkiChaatDecomposer,
+    SnackVadaPavDecomposer,
+    SnackMisalPavDecomposer,
+    MomoPlatterDecomposer,
+    CompositeSnackPlatterResult
+)
+from app.food_ai.nutrition_engine.snacks_recipes import (
+    SnackRecipeNutritionCalculator,
+    Section63SnackAnnotation,
+    Section64MultiFoodOutput,
+    Section51UnknownSnackFallback,
+    Section53SnackUserCorrectionRecord
+)
+
 
 
 
@@ -2611,7 +2650,211 @@ class ProductionInferenceOrchestrator:
             confidence=confidence
         )
 
+    # =========================================================================
+    # PART 15 — INDIAN SNACKS + TIFFIN INFERENCE METHODS
+    # =========================================================================
+    def analyze_snack_dish(
+        self,
+        dish_name_or_id: str,
+        piece_count: Optional[int] = None,
+        weight_g: Optional[float] = None,
+        preparation_style: str = "commercial",
+        include_accompaniments: bool = True,
+        accompaniment_list: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """
+        Analyzes an Indian snack or tiffin dish per Part 15 specification.
+        """
+        return SnackRecipeNutritionCalculator.calculate_nutrition(
+            food_id_or_name=dish_name_or_id,
+            piece_count=piece_count,
+            weight_grams=weight_g,
+            preparation_style=preparation_style,
+            include_accompaniments=include_accompaniments,
+            accompaniment_list=accompaniment_list,
+        )
+
+    def analyze_tiffin_combo(
+        self,
+        idli_count: int = 4,
+        vada_count: int = 2,
+        sambar_volume_ml: float = 120.0,
+        chutney_volume_ml: float = 40.0
+    ) -> CompositeSnackPlatterResult:
+        """
+        Decomposes South Indian Tiffin Combo per Section 64 benchmark.
+        """
+        return TiffinComboDecomposer.decompose(
+            idli_count=idli_count,
+            vada_count=vada_count,
+            sambar_volume_ml=sambar_volume_ml,
+            chutney_volume_ml=chutney_volume_ml,
+        )
+
+    def analyze_samosa_plate(
+        self,
+        samosa_count: int = 2,
+        include_chutneys: bool = True
+    ) -> CompositeSnackPlatterResult:
+        """
+        Decomposes Samosa Plate with accompaniments (Section 11 & 31).
+        """
+        return SamosaPlateDecomposer.decompose(
+            samosa_count=samosa_count,
+            include_chutneys=include_chutneys,
+        )
+
+    def analyze_pani_puri_plate(
+        self,
+        puri_count: int = 6
+    ) -> CompositeSnackPlatterResult:
+        """
+        Decomposes Pani Puri Plate into constituent items (Section 16).
+        """
+        return PaniPuriAssemblyDecomposer.decompose(puri_count=puri_count)
+
+    def analyze_aloo_tikki_chaat(
+        self,
+        tikki_count: int = 2
+    ) -> CompositeSnackPlatterResult:
+        """
+        Decomposes Delhi Aloo Tikki Chaat (Section 14).
+        """
+        return AlooTikkiChaatDecomposer.decompose(tikki_count=tikki_count)
+
+    def analyze_snack_vada_pav(
+        self,
+        count: int = 1
+    ) -> CompositeSnackPlatterResult:
+        """
+        Decomposes Mumbai Vada Pav assembly (Section 18).
+        """
+        return SnackVadaPavDecomposer.decompose(vada_pav_count=count)
+
+    def analyze_snack_misal_pav(
+        self,
+        pav_count: int = 2
+    ) -> CompositeSnackPlatterResult:
+        """
+        Decomposes Maharashtra Misal Pav Platter (Section 18).
+        """
+        return SnackMisalPavDecomposer.decompose(pav_count=pav_count)
+
+    def analyze_momo_platter(
+        self,
+        momo_type: str = "steamed_veg",
+        momo_count: int = 6
+    ) -> CompositeSnackPlatterResult:
+        """
+        Decomposes Himalayan Momo Platter (Section 23).
+        """
+        return MomoPlatterDecomposer.decompose(momo_type=momo_type, momo_count=momo_count)
+
+    def disambiguate_snack(
+        self,
+        pair_id: str,
+        visual_evidence: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Disambiguates a registered hard-negative snack pair (Section 30).
+        """
+        return disambiguate_snack_pair(pair_id=pair_id, visual_evidence=visual_evidence)
+
+    def verify_dhokla_vs_khaman(
+        self,
+        visual_features: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Verifies Khatta Dhokla vs Nylon Khaman (Sections 19 & 26).
+        """
+        return DhoklaVsKhamanVerifier.verify(visual_features=visual_features)
+
+    def verify_samosa_vs_kachori(
+        self,
+        visual_features: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Verifies Samosa vs Kachori (Sections 11 & 12).
+        """
+        return SamosaVsKachoriVerifier.verify(visual_features=visual_features)
+
+    def verify_vada_vs_bonda(
+        self,
+        visual_features: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Verifies Medhu Vadai vs Potato Bonda (Sections 5 & 27).
+        """
+        return VadaVsBondaVerifier.verify(visual_features=visual_features)
+
+    def estimate_snack_oil_tier(
+        self,
+        cooking_method: str,
+        sheen_score: float = 0.5,
+        fried_blistering: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Estimates qualitative oil tier without false precision (Section 37).
+        """
+        return QualitativeOilEstimator.estimate_oil_level(
+            cooking_method=cooking_method,
+            sheen_score=sheen_score,
+            fried_blistering=fried_blistering,
+        )
+
+    def refine_snack_portion_two_photo(
+        self,
+        food_id: str,
+        top_view_piece_count: int,
+        side_view_height_cm: float,
+        reference_plate_diameter_cm: float = 24.0
+    ) -> Dict[str, Any]:
+        """
+        Refines snack portion estimation using Two-Photo mode (Section 35).
+        """
+        return TwoPhotoPortionMode.refine_portion(
+            food_id=food_id,
+            top_view_piece_count=top_view_piece_count,
+            side_view_height_cm=side_view_height_cm,
+            reference_plate_diameter_cm=reference_plate_diameter_cm,
+        )
+
+    def verify_section_74_snack_rules(
+        self,
+        output_payload: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Validates non-negotiable rules for snack AI predictions (Section 74).
+        """
+        return Section74NonNegotiableSnackVerifier.validate_snack_output(output_payload=output_payload)
+
+    def record_snack_user_correction(
+        self,
+        image_uri: str,
+        predicted_id: str,
+        predicted_name: str,
+        confidence: float,
+        corrected_id: str,
+        corrected_name: str,
+        portion_weight_g: float,
+        region: Optional[str] = None
+    ) -> Section53SnackUserCorrectionRecord:
+        """
+        Records user correction audit trail for Active Learning (Section 53).
+        """
+        return SnackRecipeNutritionCalculator.record_user_correction(
+            image_uri=image_uri,
+            predicted_id=predicted_id,
+            predicted_name=predicted_name,
+            confidence=confidence,
+            corrected_id=corrected_id,
+            corrected_name=corrected_name,
+            portion_weight_g=portion_weight_g,
+            region=region,
+        )
+
 
 production_orchestrator = ProductionInferenceOrchestrator()
+
 
 
