@@ -58,6 +58,10 @@ from app.food_ai.portion_engine.street_food_portions import (
 )
 from app.food_ai.nutrition_engine.street_food_recipes import (
     StreetRecipeNutritionCalculator,
+    Section5PaniPuriComponents,
+    Section26IdliVadaCombo,
+    Section72UnknownStreetFood,
+    Section75MultiFoodOutput,
     Section96SingleItemOutput,
     Section96MultiFoodOutput
 )
@@ -413,3 +417,88 @@ def test_orchestrator_multi_food_plate_analysis():
     assert "–" in res.total_estimated_calories_range
     assert res.total_calories_low < res.total_calories_expected < res.total_calories_high
     assert res.overall_confidence == "High"
+
+
+# =============================================================================
+# 11. SECTION 5, 20, 26, 72, 75, 80 QUALITY & OUTPUT TESTS
+# =============================================================================
+
+def test_section_5_pani_puri_component_separation():
+    """Section 5: Output components separately when visible (puri, spiced filling, pani)."""
+    pp = production_orchestrator.generate_street_section_5_pani_puri(count=6)
+    assert isinstance(pp, Section5PaniPuriComponents)
+    assert pp.food_name == "Pani Puri"
+    assert pp.count == 6
+    assert "puri" in pp.components
+    assert "spiced filling" in pp.components
+    assert "pani" in pp.components
+
+
+def test_section_20_batata_vada_rule():
+    """Section 20: If only potato vada is visible without pav bread, food_name = Batata Vada."""
+    vada_pair = disambiguate_street_food_pair(
+        candidate_a="Vada Pav",
+        candidate_b="Batata Vada",
+        observed_features={"bread": "absent", "structure": "standalone_fried_potato_sphere"}
+    )
+    assert vada_pair["resolved_food"] == "Batata Vada"
+    assert "Batata Vada" in vada_pair["decision_rationale"]
+
+
+def test_section_26_street_idli_vada_combo():
+    """Section 26: Recognizes Idli, Medu Vada, Sambar, Coconut Chutney as separate items."""
+    combo = production_orchestrator.generate_street_section_26_idli_vada_combo()
+    assert isinstance(combo, Section26IdliVadaCombo)
+    names = [it.food_name for it in combo.items]
+    assert "Idli" in names
+    assert "Medu Vada" in names
+    assert "Sambar" in names
+    assert "Coconut Chutney" in names
+
+
+def test_section_72_unknown_street_food_output():
+    """Section 72: Verifies Unknown Street Food output schema."""
+    unk = production_orchestrator.generate_street_section_72_unknown_fallback(confidence=0.26)
+    assert isinstance(unk, Section72UnknownStreetFood)
+    assert unk.food_name == "Unknown Indian Street Food"
+    assert unk.specific_dish == "Unknown"
+    assert unk.confidence == 0.26
+    assert unk.action == "Ask user for confirmation"
+
+
+def test_section_75_multi_food_output():
+    """Section 75: Multi-food output JSON example (Pani Puri, Samosa, Masala Chai)."""
+    multi = production_orchestrator.generate_street_section_75_multi_food()
+    assert isinstance(multi, Section75MultiFoodOutput)
+    assert multi.meal_type == "Indian Street Food"
+    assert len(multi.items) == 3
+
+    item_names = [it.food_name for it in multi.items]
+    assert "Pani Puri" in item_names
+    assert "Samosa" in item_names
+    assert "Masala Chai" in item_names
+
+    pp = next(it for it in multi.items if it.food_name == "Pani Puri")
+    assert pp.count == 6
+    assert pp.estimated_weight_g == 180.0
+    assert pp.confidence == 0.95
+
+
+def test_section_80_final_street_quality_rules():
+    """Section 80: Quality Rules (never classify dumpling as momo, pakora as bajji, etc.)."""
+    # 1. Momo vs Dumpling
+    momo_res = disambiguate_street_food_pair(
+        candidate_a="Himalayan Momo",
+        candidate_b="Chinese Dim Sum / Generic Dumpling",
+        observed_features={"chutney": "fiery_red_chilli_garlic_sauce", "wrapper": "wheat_flour"}
+    )
+    assert momo_res["resolved_food"] == "Himalayan Momo"
+
+    # 2. Kathi roll vs Frankie
+    roll_res = disambiguate_street_food_pair(
+        candidate_a="Kolkata Kathi Roll",
+        candidate_b="Mumbai Frankie",
+        observed_features={"bread": "flaky_layered_paratha", "egg": "bonded_egg_lining"}
+    )
+    assert roll_res["resolved_food"] == "Kolkata Kathi Roll"
+

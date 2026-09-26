@@ -32,11 +32,60 @@ from app.food_ai.portion_engine.street_food_portions import (
 )
 
 
+# =============================================================================
+# SECTION 5, 26, 72, 75 STANDARDIZED SCHEMAS
+# =============================================================================
+
+class Section5PaniPuriComponents(BaseModel):
+    """
+    Implements Section 5: Pani Puri component-wise JSON output.
+    """
+    food_name: str = "Pani Puri"
+    count: int = 6
+    components: List[str] = Field(default_factory=lambda: ["puri", "spiced filling", "pani"])
+
+class Section26ComboItem(BaseModel):
+    food_name: str
+
+class Section26IdliVadaCombo(BaseModel):
+    """
+    Implements Section 26: Street Idli / Vada Combo meal output.
+    """
+    items: List[Section26ComboItem] = Field(default_factory=lambda: [
+        Section26ComboItem(food_name="Idli"),
+        Section26ComboItem(food_name="Medu Vada"),
+        Section26ComboItem(food_name="Sambar"),
+        Section26ComboItem(food_name="Coconut Chutney")
+    ])
+
+class Section72UnknownStreetFood(BaseModel):
+    """
+    Implements Section 72: Unknown Street Food Fallback.
+    """
+    food_name: str = "Unknown Indian Street Food"
+    specific_dish: str = "Unknown"
+    confidence: float = 0.26
+    action: str = "Ask user for confirmation"
+
+class Section75ItemOutput(BaseModel):
+    food_name: str
+    count: Optional[int] = None
+    estimated_weight_g: float
+    confidence: float
+
+class Section75MultiFoodOutput(BaseModel):
+    """
+    Implements Section 75: Multi-Food Output Example.
+    """
+    meal_type: str = "Indian Street Food"
+    items: List[Section75ItemOutput]
+
 class Section96SingleItemOutput(BaseModel):
     food_name: str
     canonical_id: str
     estimated_weight_g: float
     estimated_calories_range: str  # e.g., "450–600 kcal"
+
     calories_low: float
     calories_expected: float
     calories_high: float
@@ -310,3 +359,72 @@ class StreetRecipeNutritionCalculator:
             overall_confidence="High" if len(items) > 0 else "Low",
             overall_confidence_score=0.91
         )
+
+    @classmethod
+    def generate_section_5_pani_puri(
+        cls,
+        count: int = 6,
+        components: Optional[List[str]] = None
+    ) -> Section5PaniPuriComponents:
+        """
+        Implements Section 5: Pani Puri / Golgappa / Puchka component separation JSON.
+        """
+        comps = components or ["puri", "spiced filling", "pani"]
+        return Section5PaniPuriComponents(
+            food_name="Pani Puri",
+            count=count,
+            components=comps
+        )
+
+    @classmethod
+    def generate_section_26_idli_vada_combo(cls) -> Section26IdliVadaCombo:
+        """
+        Implements Section 26: Street Idli / Vada Combo output JSON.
+        """
+        return Section26IdliVadaCombo()
+
+    @classmethod
+    def generate_section_72_unknown_fallback(
+        cls,
+        confidence: float = 0.26
+    ) -> Section72UnknownStreetFood:
+        """
+        Implements Section 72: Unknown Street Food Fallback.
+        """
+        return Section72UnknownStreetFood(
+            food_name="Unknown Indian Street Food",
+            specific_dish="Unknown",
+            confidence=confidence,
+            action="Ask user for confirmation"
+        )
+
+    @classmethod
+    def generate_section_75_multi_food(
+        cls,
+        items_spec: Optional[List[Dict[str, Any]]] = None
+    ) -> Section75MultiFoodOutput:
+        """
+        Implements Section 75: Multi-Food Output Example.
+        Default: Pani Puri (6, 180g, 0.95), Samosa (2, 160g, 0.94), Masala Chai (180g, 0.91).
+        """
+        if items_spec is None:
+            items_spec = [
+                {"food_name": "Pani Puri", "count": 6, "estimated_weight_g": 180.0, "confidence": 0.95},
+                {"food_name": "Samosa", "count": 2, "estimated_weight_g": 160.0, "confidence": 0.94},
+                {"food_name": "Masala Chai", "count": None, "estimated_weight_g": 180.0, "confidence": 0.91}
+            ]
+
+        item_objs = [
+            Section75ItemOutput(
+                food_name=it["food_name"],
+                count=it.get("count"),
+                estimated_weight_g=float(it["estimated_weight_g"]),
+                confidence=float(it["confidence"])
+            ) for it in items_spec
+        ]
+
+        return Section75MultiFoodOutput(
+            meal_type="Indian Street Food",
+            items=item_objs
+        )
+

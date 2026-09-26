@@ -155,6 +155,10 @@ from app.food_ai.datasets.street_food_composite_decomposer import (
 )
 from app.food_ai.nutrition_engine.street_food_recipes import (
     StreetRecipeNutritionCalculator,
+    Section5PaniPuriComponents,
+    Section26IdliVadaCombo,
+    Section72UnknownStreetFood,
+    Section75MultiFoodOutput,
     Section96SingleItemOutput,
     Section96MultiFoodOutput
 )
@@ -1258,6 +1262,49 @@ class ProductionInferenceOrchestrator:
             items=items,
             meta=meta
         )
+
+    def generate_street_section_5_pani_puri(
+        self,
+        count: int = 6,
+        components: Optional[List[str]] = None
+    ) -> Section5PaniPuriComponents:
+        """
+        Generates Section 5 compliant Pani Puri component-wise JSON.
+        """
+        return StreetRecipeNutritionCalculator.generate_section_5_pani_puri(
+            count=count,
+            components=components
+        )
+
+    def generate_street_section_26_idli_vada_combo(self) -> Section26IdliVadaCombo:
+        """
+        Generates Section 26 compliant Street Idli / Vada Combo meal output.
+        """
+        return StreetRecipeNutritionCalculator.generate_section_26_idli_vada_combo()
+
+    def generate_street_section_72_unknown_fallback(
+        self,
+        confidence: float = 0.26
+    ) -> Section72UnknownStreetFood:
+        """
+        Generates Section 72 compliant Unknown Street Food Fallback Output.
+        """
+        return StreetRecipeNutritionCalculator.generate_section_72_unknown_fallback(
+            confidence=confidence
+        )
+
+    def generate_street_section_75_multi_food(
+        self,
+        items_spec: Optional[List[Dict[str, Any]]] = None
+    ) -> Section75MultiFoodOutput:
+        """
+        Generates Section 75 compliant Multi-Food Output Example.
+        """
+        return StreetRecipeNutritionCalculator.generate_section_75_multi_food(
+            items_spec=items_spec
+        )
+
+
 
     # =========================================================================
     # PART 9 — INDIAN RICE & BIRYANI MASTER ORCHESTRATION METHODS

@@ -211,19 +211,82 @@ STREET_FOOD_CONFUSION_REGISTRY: Dict[str, ConfusionPairDefinition] = {
         ],
         a_visual_cues={"viscosity": "high_thick_creamy", "top": "floating_malai_clot_with_nuts"},
         b_visual_cues={"viscosity": "thin_watery_frothy", "top": "roasted_cumin_specks_coriander"}
+    ),
+    "vada_pav_vs_batata_vada": ConfusionPairDefinition(
+        pair_id="vada_pav_vs_batata_vada",
+        food_a="Vada Pav",
+        food_b="Batata Vada",
+        distinguishing_features=[
+            "Pav bread presence: Split pav bun enclosing the spiced potato patty vs standalone golden-yellow fried potato sphere",
+            "Section 20 Quality Rule: If only potato vada is visible without pav bread, classify strictly as Batata Vada, never Vada Pav"
+        ],
+        a_visual_cues={"bread": "split_pav_bun_present", "structure": "patty_sandwiched_in_bread"},
+        b_visual_cues={"bread": "absent", "structure": "standalone_fried_potato_sphere"}
+    ),
+    "kothu_parotta_vs_fried_noodles": ConfusionPairDefinition(
+        pair_id="kothu_parotta_vs_fried_noodles",
+        food_a="Kothu Parotta",
+        food_b="Street Fried Noodles",
+        distinguishing_features=[
+            "Texture: Shredded layered flaky parotta ribbons chopped with twin metal spatulas vs continuous extruded wheat noodle strands",
+            "Sauce base: Salna curry / spiced meat gravy infused vs soy-chilli Indo-Chinese sauce"
+        ],
+        a_visual_cues={"texture": "flaky_shredded_parotta_ribbons", "gravy": "infused_salna_curry"},
+        b_visual_cues={"texture": "cylindrical_smooth_noodle_strands", "gravy": "indo_chinese_soy_sauce"}
+    ),
+    "chicken_65_vs_chicken_pakora": ConfusionPairDefinition(
+        pair_id="chicken_65_vs_chicken_pakora",
+        food_a="Chicken 65",
+        food_b="Chicken Pakora",
+        distinguishing_features=[
+            "Color & seasoning: Fiery deep-red curd, ginger-garlic, Kashmiri chilli marinated cubes tossed with fried curry leaves and green chillies",
+            "Batter: Minimal crisp cornflour coating in Chicken 65 vs thick golden-yellow gram flour (besan) batter in Chicken Pakora"
+        ],
+        a_visual_cues={"color": "intense_red", "garnish": ["fried_curry_leaves", "split_green_chillies"], "batter": "thin_crisp_spiced"},
+        b_visual_cues={"color": "golden_yellow_brown", "batter": "thick_besan_crust"}
     )
 }
+
+
+
+class StreetDisambiguationResult(tuple):
+    def __new__(cls, resolved_food: str, confidence: float, rationale: str):
+        return super().__new__(cls, (resolved_food, confidence, rationale))
+
+    @property
+    def resolved_food(self) -> str:
+        return self[0]
+
+    @property
+    def confidence(self) -> float:
+        return self[1]
+
+    @property
+    def decision_rationale(self) -> str:
+        return self[2]
+
+    def __getitem__(self, item):
+        if isinstance(item, str):
+            if item == "resolved_food":
+                return self[0]
+            if item == "confidence":
+                return self[1]
+            if item in ("decision_rationale", "rationale", "notes"):
+                return self[2]
+        return super().__getitem__(item)
 
 
 def disambiguate_street_food_pair(
     candidate_a: str,
     candidate_b: str,
-    visual_evidence: Dict[str, Any]
-) -> Tuple[str, float, str]:
+    visual_evidence: Optional[Dict[str, Any]] = None,
+    observed_features: Optional[Dict[str, Any]] = None
+) -> StreetDisambiguationResult:
     """
     Evaluates visual cues between high-confusion street food candidate pairs.
-    Returns: (resolved_food, confidence, rationale)
+    Returns: StreetDisambiguationResult(resolved_food, confidence, rationale)
     """
+    evidence = observed_features if observed_features is not None else (visual_evidence or {})
     for pair in STREET_FOOD_CONFUSION_REGISTRY.values():
         is_match = (
             (candidate_a.lower() in pair.food_a.lower() or pair.food_a.lower() in candidate_a.lower()) and
@@ -235,23 +298,24 @@ def disambiguate_street_food_pair(
             reasons = []
 
             for k, val in pair.a_visual_cues.items():
-                if visual_evidence.get(k) == val or (isinstance(val, list) and any(v in visual_evidence.get(k, []) for v in val)):
+                if evidence.get(k) == val or (isinstance(val, list) and any(v in evidence.get(k, []) for v in val)):
                     score_a += 1
                     reasons.append(f"Detected {k}={val} indicative of {pair.food_a}")
 
             for k, val in pair.b_visual_cues.items():
-                if visual_evidence.get(k) == val or (isinstance(val, list) and any(v in visual_evidence.get(k, []) for v in val)):
+                if evidence.get(k) == val or (isinstance(val, list) and any(v in evidence.get(k, []) for v in val)):
                     score_b += 1
                     reasons.append(f"Detected {k}={val} indicative of {pair.food_b}")
 
             if score_a > score_b:
-                return pair.food_a, min(0.95, 0.70 + 0.10 * (score_a - score_b)), "; ".join(reasons)
+                return StreetDisambiguationResult(pair.food_a, min(0.95, 0.70 + 0.10 * (score_a - score_b)), "; ".join(reasons))
             elif score_b > score_a:
-                return pair.food_b, min(0.95, 0.70 + 0.10 * (score_b - score_a)), "; ".join(reasons)
+                return StreetDisambiguationResult(pair.food_b, min(0.95, 0.70 + 0.10 * (score_b - score_a)), "; ".join(reasons))
             else:
-                return candidate_a, 0.55, f"Ambiguous between {pair.food_a} and {pair.food_b}; insufficient distinguishing cues."
+                return StreetDisambiguationResult(candidate_a, 0.55, f"Ambiguous between {pair.food_a} and {pair.food_b}; insufficient distinguishing cues.")
 
-    return candidate_a, 0.60, "Generic disambiguation fallback."
+    return StreetDisambiguationResult(candidate_a, 0.60, "Generic disambiguation fallback.")
+
 
 
 # =============================================================================
