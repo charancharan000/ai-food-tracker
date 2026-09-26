@@ -8,25 +8,38 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
+  Image,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
+import { coachService, CoachChatMessage } from "../services/coachService";
 
 interface ChatMessage {
   id: string;
   sender: "user" | "coach";
   text: string;
   time: string;
+  imageUri?: string;
+  isLoggedMeal?: boolean;
 }
 
 const PROMPT_SUGGESTIONS = [
-  "High protein post-workout meal",
-  "How to curb evening sugar cravings",
-  "Healthy low-carb dinner ideas",
-  "Best foods for muscle recovery",
+  "machi bulking ku enna sapdanum?",
+  "how much protein should i eat?",
+  "2 dosa calories?",
+  "running panna muscle loss aguma?",
+  "creatine daily edukanuma?",
+  "I ate 3 eggs",
+  "today enaku evlo calories venum?",
+  "best workout for chest?",
+  "night rice sapta weight increase aguma?",
+  "pre-workout enna sapdanum?",
 ];
 
 export default function NutritionCoachScreen() {
@@ -35,81 +48,183 @@ export default function NutritionCoachScreen() {
   const router = useRouter();
 
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [attachedImageUri, setAttachedImageUri] = useState<string | null>(null);
+
+  const targetCals = user?.daily_calorie_target || 2000;
+  const targetProtein = user?.protein_target || (user?.weight_kg ? Math.round(user.weight_kg * 1.8) : 140);
+  const userName = user?.name ? user.name.split(" ")[0] : "Friend";
+  const userWeight = user?.weight_kg || 70;
+  const userGoal = (user?.goal || "muscle gain").replace("_", " ");
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "1",
       sender: "coach",
-      text: `Hello ${user?.name ? user.name.split(" ")[0] : "Friend"}! 👋 I'm your dedicated AI Nutrition Coach.\n\nYour target is ${user?.daily_calorie_target || 2000} kcal/day with a goal to ${user?.goal || "maintain"}. Ask me anything about meal substitutions, pre/post workout nutrition, or reaching your daily macros!`,
+      text: `Vanakkam ${userName}! 👋 I'm your dedicated FITBRO AI Fitness & Nutrition Coach.\n\n` +
+        `📊 **Your Active Profile:**\n` +
+        `• Weight: **${userWeight} kg** | Goal: **${userGoal.toUpperCase()}**\n` +
+        `• Target: **${targetCals} kcal/day** | Protein: **${targetProtein}g**\n\n` +
+        `Ask me anything in **English, Tamil, or Tanglish**! Try:\n` +
+        `• *"machi bulking ku enna sapdanum?"*\n` +
+        `• *"running panna muscle loss aguma?"*\n` +
+        `• *"2 dosa calories?"*\n` +
+        `• *"I ate 3 eggs"* (I'll automatically log it into your diary!)`,
       time: "Just now",
     },
   ]);
 
   const scrollViewRef = useRef<ScrollView>(null);
 
-  const generateCoachResponse = (query: string): string => {
-    const q = query.toLowerCase();
-    const targetCals = user?.daily_calorie_target || 2000;
-    const proteinTarget = user?.protein_target || 140;
+  const handlePickImage = async () => {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert(
+          "Permission Required",
+          "Please allow photo library access to share food images with your coach."
+        );
+        return;
+      }
 
-    if (q.includes("post-workout") || q.includes("workout")) {
-      return `For optimal muscle recovery post-workout, aim for a 3:1 or 2:1 ratio of carbs to protein within 45 minutes of training.\n\nGreat options:\n• Whey isolate smoothie with 1 frozen banana & almond milk (~280 kcal, 30g protein)\n• 150g grilled chicken breast with 1 cup jasmine rice (~420 kcal, 40g protein)\n• Greek yogurt (0%) with a drizzle of honey & blueberries (~220 kcal, 22g protein)`;
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setAttachedImageUri(result.assets[0].uri);
+      }
+    } catch {
+      Alert.alert("Notice", "Unable to select photo. You can type your food question directly.");
     }
-
-    if (q.includes("craving") || q.includes("sugar") || q.includes("sweet")) {
-      return `Evening sugar cravings often indicate low protein earlier in the day or slight dehydration.\n\nSmart swaps:\n1. Frozen grapes or mixed berries with a dash of cinnamon (~60 kcal)\n2. 2 squares of 85%+ Dark Chocolate with a glass of water (~110 kcal)\n3. Chamomile tea with 1 tsp raw honey to calm cortisol levels.`;
-    }
-
-    if (q.includes("low-carb") || q.includes("keto") || q.includes("dinner")) {
-      return `Here is a nutrient-packed low-carb dinner fitting your ${targetCals} kcal plan:\n\nPan-seared Atlantic Salmon (180g) with garlic butter roasted asparagus & riced cauliflower.\n• Calories: 440 kcal\n• Protein: 42g\n• Net Carbs: 6g\n• Healthy Fats: 26g (rich in Omega-3 EPA/DHA)`;
-    }
-
-    if (q.includes("protein")) {
-      return `Your daily protein target is ${proteinTarget}g. To hit this consistently without feeling stuffed:\n\n• Start breakfast with 30g protein (eggs + egg whites or Greek yogurt)\n• Ensure lunch and dinner have at least 40g (lean poultry, fish, tofu, or lean beef)\n• Use a high-quality whey or plant isolate shake if you're ever falling short towards the evening.`;
-    }
-
-    return `Based on your goal to ${user?.goal || "maintain health"}, consistency and whole food density are key. Focus on lean protein sources, complex fibrous carbs, and healthy monounsaturated fats. Feel free to ask about any specific food item or recipe substitution!`;
   };
 
-  const handleSend = (textToSend?: string) => {
+  const handleTakePhoto = async () => {
+    try {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert(
+          "Permission Required",
+          "Please grant camera access to snap food for your coach."
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setAttachedImageUri(result.assets[0].uri);
+      }
+    } catch {
+      Alert.alert("Notice", "Unable to open camera.");
+    }
+  };
+
+  const handleSend = async (textToSend?: string) => {
     const query = (textToSend || input).trim();
-    if (!query) return;
+    const imageToAnalyze = attachedImageUri;
+
+    if (!query && !imageToAnalyze) return;
+
+    // Reset inputs
+    setInput("");
+    setAttachedImageUri(null);
 
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       sender: "user",
-      text: query,
+      text: query || (imageToAnalyze ? "📸 Analyze this meal for me" : ""),
       time: "Now",
+      imageUri: imageToAnalyze || undefined,
     };
 
     setMessages((prev) => [...prev, userMsg]);
-    setInput("");
+    setLoading(true);
+    scrollViewRef.current?.scrollToEnd({ animated: true });
 
-    setTimeout(() => {
-      const responseText = generateCoachResponse(query);
+    try {
+      if (imageToAnalyze) {
+        // Image-based food analysis with coach
+        const res = await coachService.analyzeFoodImageWithCoach(
+          imageToAnalyze,
+          "image/jpeg",
+          query || "Analyze this food for me"
+        );
+
+        let coachText = res?.coach_commentary || "Here is your meal breakdown:";
+        if (res?.meal_analysis) {
+          const m = res.meal_analysis;
+          coachText += `\n\n🍽️ **Estimated Nutrition:**\n` +
+            `• Calories: **${m.total_calories || 0} kcal**\n` +
+            `• Protein: **${m.total_protein_g || 0}g**\n` +
+            `• Carbs: **${m.total_carbs_g || 0}g**\n` +
+            `• Fats: **${m.total_fat_g || 0}g**`;
+        }
+
+        const coachMsg: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          sender: "coach",
+          text: coachText,
+          time: "Now",
+          isLoggedMeal: true,
+        };
+        setMessages((prev) => [...prev, coachMsg]);
+      } else {
+        // Build conversation history for multi-turn context
+        const convHistory: CoachChatMessage[] = messages.slice(-6).map((m) => ({
+          role: m.sender === "user" ? "user" : "assistant",
+          content: m.text,
+        }));
+
+        const res = await coachService.chatWithCoach(query, convHistory, true);
+
+        const coachMsg: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          sender: "coach",
+          text: res.reply,
+          time: "Now",
+          isLoggedMeal: Boolean(res.logged_meal),
+        };
+        setMessages((prev) => [...prev, coachMsg]);
+      }
+    } catch {
+      // Offline fallback
+      const offlineRes = coachService.generateOfflineResponse(query);
       const coachMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         sender: "coach",
-        text: responseText,
+        text: offlineRes.reply,
         time: "Now",
       };
       setMessages((prev) => [...prev, coachMsg]);
+    } finally {
+      setLoading(false);
       scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 450);
+    }
   };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={["top"]}>
+      {/* Top Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <View style={styles.headerTitleWrap}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>AI Nutrition Coach</Text>
-          <Text style={[styles.headerStatus, { color: "#10B981" }]}>Online • Pro Intelligence</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>AI Fitness & Nutrition Coach</Text>
+          <Text style={[styles.headerStatus, { color: "#10B981" }]}>Online • Pro Intelligence (Tamil & English)</Text>
         </View>
         <View style={[styles.vipPill, { backgroundColor: `${colors.amber}20` }]}>
           <Ionicons name="sparkles" size={12} color={colors.amber} />
-          <Text style={[styles.vipPillText, { color: colors.amber }]}>AI PRO</Text>
+          <Text style={[styles.vipPillText, { color: colors.amber }]}>FITBRO AI</Text>
         </View>
       </View>
 
@@ -135,7 +250,7 @@ export default function NutritionCoachScreen() {
               >
                 {!isUser && (
                   <View style={[styles.coachAvatar, { backgroundColor: `${colors.primary}20` }]}>
-                    <Ionicons name="nutrition" size={18} color={colors.primary} />
+                    <Ionicons name="barbell" size={18} color={colors.primary} />
                   </View>
                 )}
                 <View
@@ -149,6 +264,19 @@ export default function NutritionCoachScreen() {
                         ],
                   ]}
                 >
+                  {m.imageUri && (
+                    <Image
+                      source={{ uri: m.imageUri }}
+                      style={styles.messageImage}
+                      resizeMode="cover"
+                    />
+                  )}
+                  {m.isLoggedMeal && (
+                    <View style={styles.mealBadge}>
+                      <Ionicons name="checkmark-circle" size={14} color="#10B981" />
+                      <Text style={styles.mealBadgeText}>Food Logged into Diary</Text>
+                    </View>
+                  )}
                   <Text
                     style={[
                       styles.bubbleText,
@@ -157,12 +285,41 @@ export default function NutritionCoachScreen() {
                   >
                     {m.text}
                   </Text>
+                  <Text
+                    style={[
+                      styles.timestampText,
+                      { color: isUser ? "rgba(255,255,255,0.7)" : colors.textMuted },
+                    ]}
+                  >
+                    {m.time}
+                  </Text>
                 </View>
               </View>
             );
           })}
+
+          {loading && (
+            <View style={[styles.messageBubbleWrap, styles.coachBubbleWrap]}>
+              <View style={[styles.coachAvatar, { backgroundColor: `${colors.primary}20` }]}>
+                <Ionicons name="barbell" size={18} color={colors.primary} />
+              </View>
+              <View
+                style={[
+                  styles.bubble,
+                  styles.coachBubble,
+                  { backgroundColor: colors.surface, borderColor: colors.border, flexDirection: "row", alignItems: "center", gap: 8 },
+                ]}
+              >
+                <ActivityIndicator size="small" color={colors.primary} />
+                <Text style={[styles.bubbleText, { color: colors.textSecondary }]}>
+                  Coach is thinking...
+                </Text>
+              </View>
+            </View>
+          )}
         </ScrollView>
 
+        {/* Suggestion Chips */}
         <View style={styles.suggestionsStrip}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.suggestionsScroll}>
             {PROMPT_SUGGESTIONS.map((item, idx) => (
@@ -181,23 +338,54 @@ export default function NutritionCoachScreen() {
           </ScrollView>
         </View>
 
+        {/* Attached Photo Preview Bar */}
+        {attachedImageUri && (
+          <View style={[styles.previewBar, { backgroundColor: colors.surfaceHighlight, borderColor: colors.border }]}>
+            <Image source={{ uri: attachedImageUri }} style={styles.previewThumbnail} />
+            <Text style={[styles.previewText, { color: colors.text }]}>Photo ready to analyze</Text>
+            <TouchableOpacity onPress={() => setAttachedImageUri(null)} style={styles.previewCloseBtn}>
+              <Ionicons name="close-circle" size={20} color={colors.textMuted} />
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Input Bar */}
         <View style={[styles.inputBar, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
+          <TouchableOpacity
+            style={styles.mediaBtn}
+            onPress={handlePickImage}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="images-outline" size={22} color={colors.textSecondary} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.mediaBtn}
+            onPress={handleTakePhoto}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="camera-outline" size={22} color={colors.textSecondary} />
+          </TouchableOpacity>
+
           <TextInput
             style={[
               styles.textInput,
               { backgroundColor: colors.surfaceHighlight, color: colors.text, borderColor: colors.border },
             ]}
-            placeholder="Ask your coach anything about food..."
+            placeholder="Ask coach or type 'I ate 3 eggs'..."
             placeholderTextColor={colors.textMuted}
             value={input}
             onChangeText={setInput}
             onSubmitEditing={() => handleSend()}
             returnKeyType="send"
           />
+
           <TouchableOpacity
-            style={[styles.sendButton, { backgroundColor: colors.primary }]}
+            style={[
+              styles.sendButton,
+              { backgroundColor: input.trim() || attachedImageUri ? colors.primary : `${colors.primary}60` },
+            ]}
             onPress={() => handleSend()}
-            disabled={!input.trim()}
+            disabled={!input.trim() && !attachedImageUri}
             activeOpacity={0.8}
           >
             <Ionicons name="send" size={18} color="#FFFFFF" />
@@ -255,7 +443,7 @@ const styles = StyleSheet.create({
   messageBubbleWrap: {
     flexDirection: "row",
     gap: 8,
-    maxWidth: "86%",
+    maxWidth: "88%",
   },
   userBubbleWrap: {
     alignSelf: "flex-end",
@@ -276,6 +464,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     paddingHorizontal: 14,
     paddingVertical: 10,
+    minWidth: 80,
   },
   userBubble: {
     borderBottomRightRadius: 4,
@@ -287,6 +476,33 @@ const styles = StyleSheet.create({
   bubbleText: {
     fontSize: 14,
     lineHeight: 20,
+  },
+  timestampText: {
+    fontSize: 10,
+    marginTop: 4,
+    alignSelf: "flex-end",
+  },
+  messageImage: {
+    width: 220,
+    height: 150,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  mealBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "rgba(16, 185, 129, 0.15)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: "flex-start",
+    marginBottom: 6,
+  },
+  mealBadgeText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#10B981",
   },
   suggestionsStrip: {
     paddingVertical: 6,
@@ -305,13 +521,37 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
   },
+  previewBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    gap: 10,
+  },
+  previewThumbnail: {
+    width: 36,
+    height: 36,
+    borderRadius: 6,
+  },
+  previewText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  previewCloseBtn: {
+    padding: 4,
+  },
   inputBar: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 10,
     borderTopWidth: 1,
     gap: 8,
+  },
+  mediaBtn: {
+    padding: 6,
   },
   textInput: {
     flex: 1,
