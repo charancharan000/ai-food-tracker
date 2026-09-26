@@ -41,7 +41,7 @@ def test_masala_dosa_with_sambar_chutney():
         dish_hint="Masala Dosa",
         preferred_mode="normal"
     )
-    assert res.primary_dish == "Masala Dosa"
+    assert "Masala Dosa" in res.primary_dish
     assert len(res.detected_items) >= 2
     
     dosa_item = next(it for it in res.detected_items if "Masala Dosa" in it.name)

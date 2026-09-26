@@ -132,5 +132,62 @@ RECIPE_REGISTRY: Dict[str, List[RecipeBlueprint]] = {
             cooked_weight_yield_g=420.0,
             cooking_notes="Pressure cooked soft with 4x water, finished with crackling pepper-cumin ghee."
         )
+    ],
+    "Medu Vada": [
+        RecipeBlueprint(
+            dish_id="medu_vada_classic",
+            dish_name="Medu Vada (1 piece)",
+            variant="Deep Fried Urad Dal Fritter",
+            ingredients=[
+                RecipeIngredient(name="Soaked Urad Dal", raw_weight_g=45.0, calories=150.0, protein_g=10.5, carbs_g=26.0, fat_g=0.6),
+                RecipeIngredient(name="Absorbed Frying Oil", raw_weight_g=7.0, calories=63.0, protein_g=0.0, carbs_g=0.0, fat_g=7.0),
+                RecipeIngredient(name="Onion, Ginger, Pepper", raw_weight_g=6.0, calories=5.0, protein_g=0.2, carbs_g=1.0, fat_g=0.0),
+            ],
+            cooked_weight_yield_g=55.0,
+            cooking_notes="Fluffy aerated batter shaped with hole, deep fried at 180°C."
+        )
+    ],
+    "Chicken Kothu Parotta": [
+        RecipeBlueprint(
+            dish_id="kothu_parotta_chicken",
+            dish_name="Chicken Kothu Parotta",
+            variant="Street Style with Egg & Chicken Salna",
+            ingredients=[
+                RecipeIngredient(name="Shredded Maida Parotta", raw_weight_g=180.0, calories=570.0, protein_g=11.5, carbs_g=85.0, fat_g=21.0),
+                RecipeIngredient(name="Chicken Meat Pieces", raw_weight_g=70.0, calories=105.0, protein_g=18.0, carbs_g=0.0, fat_g=3.5),
+                RecipeIngredient(name="Egg (1 whole)", raw_weight_g=50.0, calories=72.0, protein_g=6.3, carbs_g=0.4, fat_g=4.8),
+                RecipeIngredient(name="Salna / Spiced Gravy", raw_weight_g=60.0, calories=55.0, protein_g=1.8, carbs_g=4.0, fat_g=3.8),
+            ],
+            cooked_weight_yield_g=340.0,
+            cooking_notes="Chop-griddled with metal blades on heavy flat-top cast iron."
+        )
+    ],
+    "Curd Rice": [
+        RecipeBlueprint(
+            dish_id="curd_rice_tempered",
+            dish_name="Curd Rice (Thayir Sadam)",
+            variant="Traditional Home Style Tempered",
+            ingredients=[
+                RecipeIngredient(name="Cooked Soft White Rice", raw_weight_g=140.0, calories=182.0, protein_g=3.8, carbs_g=39.0, fat_g=0.4),
+                RecipeIngredient(name="Fresh Thick Curd & Milk", raw_weight_g=100.0, calories=68.0, protein_g=3.5, carbs_g=4.8, fat_g=3.8),
+                RecipeIngredient(name="Ghee Tempering with Mustard, Green Chillies, Curry Leaves", raw_weight_g=6.0, calories=54.0, protein_g=0.0, carbs_g=0.0, fat_g=6.0),
+            ],
+            cooked_weight_yield_g=240.0,
+            cooking_notes="Softly mashed rice folded with fresh curd, tempered in hot ghee."
+        )
+    ],
+    "Chicken 65": [
+        RecipeBlueprint(
+            dish_id="chicken_65_crispy",
+            dish_name="Chicken 65",
+            variant="South Indian Restaurant Crispy Deep Fried",
+            ingredients=[
+                RecipeIngredient(name="Boneless Chicken Cubes", raw_weight_g=120.0, calories=144.0, protein_g=27.0, carbs_g=0.0, fat_g=3.1),
+                RecipeIngredient(name="Cornflour/Rice Flour Batter & Spices", raw_weight_g=18.0, calories=65.0, protein_g=1.0, carbs_g=15.0, fat_g=0.2),
+                RecipeIngredient(name="Absorbed Frying Oil", raw_weight_g=18.0, calories=162.0, protein_g=0.0, carbs_g=0.0, fat_g=18.0),
+            ],
+            cooked_weight_yield_g=150.0,
+            cooking_notes="Deep fried with curry leaves and green chillies."
+        )
     ]
 }
