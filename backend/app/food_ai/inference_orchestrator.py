@@ -74,6 +74,131 @@ from app.food_ai.nutrition_engine.west_indian_recipes import (
     WestIndianRecipeNutritionCalculator,
     Section51ModelOutput
 )
+from app.food_ai.taxonomy.east_indian_master_taxonomy import (
+    get_east_food_class,
+    resolve_east_food_by_name
+)
+from app.food_ai.datasets.east_indian_hard_negatives import (
+    EAST_INDIAN_CONFUSION_REGISTRY,
+    disambiguate_east_indian_pair,
+    FishSpeciesClassifier,
+    MustardFishDetector,
+    DahibaraAloodumSegmenter,
+    ChamparanMuttonDetector,
+    LeafyGreenSaagVerifier
+)
+from app.food_ai.datasets.east_indian_composite_decomposer import (
+    BengaliThaliDecomposer,
+    OdiaThaliDecomposer,
+    LittiChokhaDecomposer,
+    DahibaraAloodumDecomposer,
+    LuchiAlurDomDecomposer,
+    DhuskaGhugniDecomposer,
+    MahaprasadTempleDecomposer,
+    EastIndianCompositeDecompositionResult
+)
+from app.food_ai.nutrition_engine.east_indian_recipes import (
+    EastIndianRecipeNutritionCalculator,
+    Section63ModelOutput
+)
+from app.food_ai.taxonomy.northeast_indian_master_taxonomy import (
+    get_northeast_food_class,
+    resolve_northeast_food_by_name
+)
+from app.food_ai.datasets.northeast_indian_hard_negatives import (
+    NORTHEAST_CONFUSION_REGISTRY,
+    disambiguate_northeast_pair,
+    NortheastRiceMeatDiscriminator,
+    FermentedSoybeanDiscriminator,
+    MashedVegetableChutneyDiscriminator,
+    SmokedMeatVerifier
+)
+from app.food_ai.datasets.northeast_indian_composite_decomposer import (
+    AssameseThaliDecomposer,
+    MeghalayaJadohPlatterDecomposer,
+    NagaPlatterDecomposer,
+    TripuriMuiBorokDecomposer,
+    SikkimMealDecomposer,
+    NortheastCompositeDecompositionResult
+)
+from app.food_ai.nutrition_engine.northeast_indian_recipes import (
+    NortheastRecipeNutritionCalculator,
+    Section86ModelOutput
+)
+from app.food_ai.taxonomy.street_food_master_taxonomy import (
+    get_street_food_class,
+    resolve_street_food_by_name,
+    StreetFoodClassRecord
+)
+from app.food_ai.datasets.street_food_hard_negatives import (
+    STREET_FOOD_CONFUSION_REGISTRY,
+    disambiguate_street_food_pair,
+    PaniPuriCountingDiscriminator,
+    StreetRollDiscriminator,
+    NoodleDiscriminator,
+    StreetPackagingFilter
+)
+from app.food_ai.datasets.street_food_composite_decomposer import (
+    PaniPuriCompositeDecomposer,
+    SamosaChaatCompositeDecomposer,
+    VadaPavCompositeDecomposer,
+    PavBhajiCompositeDecomposer,
+    MomosPlatterCompositeDecomposer,
+    MultiFoodStreetComboDecomposer,
+    StreetCompositeDecompositionResult
+)
+from app.food_ai.nutrition_engine.street_food_recipes import (
+    StreetRecipeNutritionCalculator,
+    Section96SingleItemOutput,
+    Section96MultiFoodOutput
+)
+from app.food_ai.taxonomy.rice_master_taxonomy import (
+    get_rice_food_class,
+    resolve_rice_food_by_name,
+    RiceFoodClassRecord
+)
+from app.food_ai.datasets.rice_hard_negatives import (
+    RICE_CONFUSION_REGISTRY,
+    disambiguate_rice_pair,
+    PlainRiceCurryVsBiryaniDiscriminator,
+    HandiPotDetector,
+    BiryaniMeatEggCounter
+)
+from app.food_ai.datasets.rice_composite_decomposer import (
+    BiryaniPlateDecomposer,
+    SouthIndianRiceMealDecomposer,
+    BiryaniComboMealDecomposer,
+    RiceCompositeDecompositionResult
+)
+from app.food_ai.nutrition_engine.rice_recipes import (
+    RiceRecipeNutritionCalculator,
+    Section78RiceSingleOutput,
+    Section78RiceMultiOutput
+)
+from app.food_ai.taxonomy.bread_master_taxonomy import (
+    get_bread_food_class,
+    resolve_bread_food_by_name,
+    BreadFoodClassRecord
+)
+from app.food_ai.datasets.bread_hard_negatives import (
+    BREAD_CONFUSION_REGISTRY,
+    disambiguate_bread_pair,
+    BreadStackDetector,
+    KothuParottaSegmenter,
+    BreadStuffingToppingDiscriminator
+)
+from app.food_ai.datasets.bread_composite_decomposer import (
+    BreadMealDecomposer,
+    ParathaThaliDecomposer,
+    CholeBhatureBreadDecomposer,
+    BreadCompositeDecompositionResult
+)
+from app.food_ai.nutrition_engine.bread_recipes import (
+    BreadRecipeNutritionCalculator,
+    Section82BreadSingleOutput,
+    Section82BreadMultiOutput
+)
+
 
 
 # =============================================================================
@@ -811,5 +936,531 @@ class ProductionInferenceOrchestrator:
         """
         return GoanFishThaliDecomposer.decompose(meta)
 
+    def analyze_east_indian_dish(
+        self,
+        food_identifier: str,
+        visual_cues: Optional[Dict[str, Any]] = None,
+        custom_weight_g: Optional[float] = None,
+        count: Optional[int] = None
+    ) -> Section63ModelOutput:
+        """
+        Calculates and returns exact Section 63 compliant output for an East Indian dish.
+        """
+        return EastIndianRecipeNutritionCalculator.calculate_dish_nutrition(
+            food_identifier=food_identifier,
+            visual_cues=visual_cues,
+            custom_weight_g=custom_weight_g,
+            count=count
+        )
+
+    def analyze_bengali_thali(self, meta: Optional[Dict[str, Any]] = None) -> EastIndianCompositeDecompositionResult:
+        """
+        Decomposes a traditional Bengali Feast Thali into discrete courses per Section 33.
+        """
+        return BengaliThaliDecomposer.decompose(meta)
+
+    def analyze_odia_thali(self, meta: Optional[Dict[str, Any]] = None) -> EastIndianCompositeDecompositionResult:
+        """
+        Decomposes a traditional Odia Bhojan Thali into discrete items per Section 33.
+        """
+        return OdiaThaliDecomposer.decompose(meta)
+
+    def analyze_litti_chokha(self, meta: Optional[Dict[str, Any]] = None) -> EastIndianCompositeDecompositionResult:
+        """
+        Decomposes a Bihari Litti Chokha platter into Litti, Chokha, Dal, and Ghee per Section 24.
+        """
+        return LittiChokhaDecomposer.decompose(meta)
+
+    def analyze_dahibara_aloodum(self, meta: Optional[Dict[str, Any]] = None) -> EastIndianCompositeDecompositionResult:
+        """
+        Decomposes Cuttack Dahibara Aloodum into 7-8 discrete components per Section 35.
+        """
+        return DahibaraAloodumDecomposer.decompose(meta)
+
+    def analyze_luchi_alur_dom(self, meta: Optional[Dict[str, Any]] = None) -> EastIndianCompositeDecompositionResult:
+        """
+        Decomposes Luchi + Alur Dom into separate food_1 = Luchi and food_2 = Alur Dom per Section 8.
+        """
+        return LuchiAlurDomDecomposer.decompose(meta)
+
+    def analyze_dhuska_ghugni(self, meta: Optional[Dict[str, Any]] = None) -> EastIndianCompositeDecompositionResult:
+        """
+        Decomposes Jharkhandi Dhuska + Ghugni breakfast into discrete items per Section 31.
+        """
+        return DhuskaGhugniDecomposer.decompose(meta)
+
+    def analyze_mahaprasad(self, meta: Optional[Dict[str, Any]] = None) -> EastIndianCompositeDecompositionResult:
+        """
+        Decomposes Puri Jagannath Mahaprasad into discrete temple preparations per Section 21 & Quality Rule 5.
+        """
+        return MahaprasadTempleDecomposer.decompose(meta)
+
+    def analyze_northeast_indian_dish(
+        self,
+        food_identifier: str,
+        visual_cues: Optional[Dict[str, Any]] = None,
+        custom_weight_g: Optional[float] = None,
+        count: Optional[int] = None,
+        occlusion_factor: float = 0.0
+    ) -> Section86ModelOutput:
+        """
+        Calculates and returns exact Section 86 compliant output for a Northeast Indian dish.
+        """
+        return NortheastRecipeNutritionCalculator.calculate_dish_nutrition(
+            food_identifier=food_identifier,
+            visual_cues=visual_cues,
+            custom_weight_g=custom_weight_g,
+            count=count,
+            occlusion_factor=occlusion_factor
+        )
+
+    def analyze_assamese_thali(self, meta: Optional[Dict[str, Any]] = None) -> NortheastCompositeDecompositionResult:
+        """
+        Decomposes an authentic Assamese Thali platter into 6 discrete courses.
+        """
+        return AssameseThaliDecomposer.decompose(meta)
+
+    def analyze_meghalaya_jadoh_platter(self, meta: Optional[Dict[str, Any]] = None) -> NortheastCompositeDecompositionResult:
+        """
+        Decomposes a Khasi Jadoh meal into Jadoh, Dohneiihong, Doh Khlieh, and Tungrymbai.
+        """
+        return MeghalayaJadohPlatterDecomposer.decompose(meta)
+
+    def analyze_naga_platter(self, meta: Optional[Dict[str, Any]] = None) -> NortheastCompositeDecompositionResult:
+        """
+        Decomposes a Traditional Naga Platter into Steamed Rice, Smoked Pork with Axone, Greens, and Raja Mircha Chutney.
+        """
+        return NagaPlatterDecomposer.decompose(meta)
+
+    def analyze_tripuri_mui_borok(self, meta: Optional[Dict[str, Any]] = None) -> NortheastCompositeDecompositionResult:
+        """
+        Decomposes a Tripuri Mui Borok meal into Rice, Chakhwi, Mosdeng Serma, and Gudok.
+        """
+        return TripuriMuiBorokDecomposer.decompose(meta)
+
+    def analyze_sikkim_meal(self, meta: Optional[Dict[str, Any]] = None) -> NortheastCompositeDecompositionResult:
+        """
+        Decomposes a Traditional Sikkim Meal into Rice, Gundruk Jhol, Phagshapa, Kinema, and Sel Roti.
+        """
+        return SikkimMealDecomposer.decompose(meta)
+
+    # =========================================================================
+    # PART 8 — INDIAN STREET FOOD MASTER ORCHESTRATION METHODS
+    # =========================================================================
+
+    def analyze_street_food_dish(
+        self,
+        food_identifier: str,
+        visual_cues: Optional[Dict[str, Any]] = None,
+        custom_weight_g: Optional[float] = None,
+        count: Optional[int] = None,
+        oil_override: Optional[str] = None,
+        cheese_added: bool = False,
+        mayo_added: bool = False
+    ) -> Section96SingleItemOutput:
+        """
+        Calculates and returns Section 96 compliant output for a single Indian street food dish.
+        Enforces non-negotiable Rule 98 (never hallucinate; unknown fallback when visual evidence is insufficient).
+        """
+        return StreetRecipeNutritionCalculator.calculate_single_dish(
+            food_identifier=food_identifier,
+            visual_cues=visual_cues,
+            custom_weight_g=custom_weight_g,
+            count=count,
+            oil_override=oil_override,
+            cheese_added=cheese_added,
+            mayo_added=mayo_added
+        )
+
+    def analyze_street_multi_food_plate(
+        self,
+        plate_title: str,
+        items: List[Dict[str, Any]]
+    ) -> Section96MultiFoodOutput:
+        """
+        Calculates Section 96 compliant multi-food output for a street plate with multiple discrete items.
+        """
+        return StreetRecipeNutritionCalculator.calculate_multi_food_plate(
+            plate_title=plate_title,
+            items=items
+        )
+
+    def analyze_pani_puri_platter(
+        self,
+        puri_count: int = 6,
+        filling_type: str = "ragda",
+        include_sweet_chutney: bool = True,
+        include_sev: bool = True,
+        water_flavor: str = "spicy_mint",
+        meta: Optional[Dict[str, Any]] = None
+    ) -> StreetCompositeDecompositionResult:
+        """
+        Decomposes a Pani Puri platter into individual pieces, filling mass, flavored water, and toppings per Section 4 & 5.
+        """
+        return PaniPuriCompositeDecomposer.decompose(
+            puri_count=puri_count,
+            filling_type=filling_type,
+            include_sweet_chutney=include_sweet_chutney,
+            include_sev=include_sev,
+            water_flavor=water_flavor,
+            meta=meta
+        )
+
+    def analyze_samosa_chaat(
+        self,
+        samosa_count: int = 1,
+        broken: bool = True,
+        chole_portion_g: float = 120.0,
+        dahi_portion_g: float = 60.0,
+        meta: Optional[Dict[str, Any]] = None
+    ) -> StreetCompositeDecompositionResult:
+        """
+        Decomposes Samosa Chaat into base samosa, chole curry, curd, and chutneys per Section 11.
+        """
+        return SamosaChaatCompositeDecomposer.decompose(
+            samosa_count=samosa_count,
+            broken=broken,
+            chole_portion_g=chole_portion_g,
+            dahi_portion_g=dahi_portion_g,
+            meta=meta
+        )
+
+    def analyze_vada_pav_platter(
+        self,
+        vada_pav_count: int = 1,
+        butter_toasted: bool = False,
+        cheese_slice: bool = False,
+        meta: Optional[Dict[str, Any]] = None
+    ) -> StreetCompositeDecompositionResult:
+        """
+        Decomposes Vada Pav into Pav, Batata Vada, Garlic Chutney, Green Chutney, and Fried Chilli per Section 21.
+        """
+        return VadaPavCompositeDecomposer.decompose(
+            vada_pav_count=vada_pav_count,
+            butter_toasted=butter_toasted,
+            cheese_slice=cheese_slice,
+            meta=meta
+        )
+
+    def analyze_pav_bhaji_platter(
+        self,
+        pav_count: int = 2,
+        bhaji_portion_g: float = 200.0,
+        butter_slab_g: float = 18.0,
+        extra_cheese: bool = False,
+        meta: Optional[Dict[str, Any]] = None
+    ) -> StreetCompositeDecompositionResult:
+        """
+        Decomposes Pav Bhaji into Pavs, Bhaji, Butter slab, and raw onion/lemon garnish per Section 22.
+        """
+        return PavBhajiCompositeDecomposer.decompose(
+            pav_count=pav_count,
+            bhaji_portion_g=bhaji_portion_g,
+            butter_slab_g=butter_slab_g,
+            extra_cheese=extra_cheese,
+            meta=meta
+        )
+
+    def analyze_momos_platter(
+        self,
+        momo_count: int = 6,
+        filling: str = "chicken",
+        preparation: str = "steamed",
+        has_mayo: bool = True,
+        meta: Optional[Dict[str, Any]] = None
+    ) -> StreetCompositeDecompositionResult:
+        """
+        Decomposes Momos platter into discrete pieces, spicy red chutney, and mayonnaise per Section 46.
+        """
+        return MomosPlatterCompositeDecomposer.decompose(
+            momo_count=momo_count,
+            filling=filling,
+            preparation=preparation,
+            has_mayo=has_mayo,
+            meta=meta
+        )
+
+    def analyze_street_combo(
+        self,
+        plate_name: str,
+        items: List[Dict[str, Any]],
+        meta: Optional[Dict[str, Any]] = None
+    ) -> StreetCompositeDecompositionResult:
+        """
+        Decomposes general multi-item street combo meals, filtering packaging per Section 79, 80, 81.
+        """
+        return MultiFoodStreetComboDecomposer.decompose_plate(
+            plate_name=plate_name,
+            items=items,
+            meta=meta
+        )
+
+    # =========================================================================
+    # PART 9 — INDIAN RICE & BIRYANI MASTER ORCHESTRATION METHODS
+    # =========================================================================
+
+    def analyze_rice_dish(
+        self,
+        food_identifier: str,
+        visual_cues: Optional[Dict[str, Any]] = None,
+        custom_weight_g: Optional[float] = None,
+        portion_size: Optional[str] = None,
+        visible_meat_pieces: Optional[int] = None,
+        ghee_override: Optional[str] = None,
+        has_extra_birista: bool = False,
+        has_cashews_raisins: bool = False
+    ) -> Section78RiceSingleOutput:
+        """
+        Calculates and returns Section 78 compliant output for an Indian rice or biryani dish.
+        Enforces Section 80 Non-Negotiable Rules and unknown fallback.
+        """
+        return RiceRecipeNutritionCalculator.calculate_single_dish(
+            food_identifier=food_identifier,
+            visual_cues=visual_cues,
+            custom_weight_g=custom_weight_g,
+            portion_size=portion_size,
+            visible_meat_pieces=visible_meat_pieces,
+            ghee_override=ghee_override,
+            has_extra_birista=has_extra_birista,
+            has_cashews_raisins=has_cashews_raisins
+        )
+
+    def analyze_biryani_plate(
+        self,
+        style: str = "Hyderabadi",
+        protein_type: str = "chicken",
+        rice_mass_g: float = 320.0,
+        meat_pieces_count: int = 2,
+        has_egg: bool = True,
+        has_raita: bool = True,
+        has_salan: bool = True,
+        meta: Optional[Dict[str, Any]] = None
+    ) -> RiceCompositeDecompositionResult:
+        """
+        Decomposes biryani plate into Rice, Meat, Egg, Birista, Raita, and Salan per Section 43, 44, 46.
+        """
+        return BiryaniPlateDecomposer.decompose(
+            style=style,
+            protein_type=protein_type,
+            rice_mass_g=rice_mass_g,
+            meat_pieces_count=meat_pieces_count,
+            has_egg=has_egg,
+            has_raita=has_raita,
+            has_salan=has_salan,
+            meta=meta
+        )
+
+    def analyze_south_indian_rice_meal(
+        self,
+        rice_portion_g: float = 240.0,
+        has_sambar: bool = True,
+        has_rasam: bool = True,
+        has_poriyal: bool = True,
+        has_curd: bool = True,
+        has_appalam: bool = True,
+        meta: Optional[Dict[str, Any]] = None
+    ) -> RiceCompositeDecompositionResult:
+        """
+        Decomposes a South Indian Full Rice Meal into courses per Section 58.
+        """
+        return SouthIndianRiceMealDecomposer.decompose(
+            rice_portion_g=rice_portion_g,
+            has_sambar=has_sambar,
+            has_rasam=has_rasam,
+            has_poriyal=has_poriyal,
+            has_curd=has_curd,
+            has_appalam=has_appalam,
+            meta=meta
+        )
+
+    def analyze_biryani_combo(
+        self,
+        biryani_mass_g: float = 350.0,
+        chicken_65_pieces: int = 4,
+        include_egg: bool = True,
+        include_drink: bool = True,
+        meta: Optional[Dict[str, Any]] = None
+    ) -> RiceCompositeDecompositionResult:
+        """
+        Decomposes Biryani combo meals (Biryani + Chicken 65 + Egg + Raita + Salan + Drink) per Section 59.
+        """
+        return BiryaniComboMealDecomposer.decompose_combo(
+            biryani_mass_g=biryani_mass_g,
+            chicken_65_pieces=chicken_65_pieces,
+            include_egg=include_egg,
+            include_drink=include_drink,
+            meta=meta
+        )
+
+    def analyze_rice_composite_plate(
+        self,
+        plate_title: str,
+        items: List[Dict[str, Any]]
+    ) -> Section78RiceMultiOutput:
+        """
+        Calculates Section 78 compliant output for a multi-food rice plate.
+        """
+        return RiceRecipeNutritionCalculator.calculate_composite_plate(
+            plate_title=plate_title,
+            items=items
+        )
+
+    # =========================================================================
+    # PART 10 — INDIAN BREAD RECOGNITION & MEAL DECOMPOSITION
+    # =========================================================================
+
+    def analyze_bread_dish(
+        self,
+        food_identifier: str,
+        visual_cues: Optional[Dict[str, Any]] = None,
+        custom_weight_g: Optional[float] = None,
+        piece_count: int = 1,
+        portion_category: str = "Medium",
+        diameter_cm: Optional[float] = None,
+        has_butter_slab: bool = False,
+        fat_override: Optional[str] = None
+    ) -> Section82BreadSingleOutput:
+        """
+        Calculates Section 82 compliant single bread nutrition output.
+        Enforces Section 84/85 rules (calibrated ranges, unknown fallback, shine != butter).
+        """
+        return BreadRecipeNutritionCalculator.calculate_single_dish(
+            food_identifier=food_identifier,
+            visual_cues=visual_cues,
+            custom_weight_g=custom_weight_g,
+            piece_count=piece_count,
+            portion_category=portion_category,
+            diameter_cm=diameter_cm,
+            has_butter_slab=has_butter_slab,
+            fat_override=fat_override
+        )
+
+    def disambiguate_bread(
+        self,
+        pair_id: str,
+        visual_features: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Disambiguates confusing bread pairs (e.g. Chapati vs Phulka, Naan vs Kulcha).
+        """
+        return disambiguate_bread_pair(pair_id=pair_id, visual_features=visual_features)
+
+    def detect_bread_stack(
+        self,
+        visible_edges_count: int,
+        top_bread_type: str = "Chapati",
+        observed_stack_height_mm: Optional[float] = None,
+        rim_occlusion_angle_deg: float = 0.0
+    ) -> Dict[str, Any]:
+        """
+        Calculates bread stack count and total mass with occlusion modeling.
+        Never invents hidden pieces under occlusion.
+        """
+        return BreadStackDetector.detect_stack(
+            visible_edges_count=visible_edges_count,
+            top_bread_type=top_bread_type,
+            observed_stack_height_mm=observed_stack_height_mm,
+            rim_occlusion_angle_deg=rim_occlusion_angle_deg
+        ).model_dump()
+
+    def segment_kothu_parotta(
+        self,
+        has_egg: bool = True,
+        meat_type: str = "chicken",
+        portion_g: float = 380.0,
+        meta: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Segments Kothu Parotta into parotta shreds, egg, meat, and salna gravy.
+        Never treats as plain parotta.
+        """
+        return KothuParottaSegmenter.segment(
+            has_egg=has_egg,
+            meat_type=meat_type,
+            portion_g=portion_g,
+            meta=meta
+        ).model_dump()
+
+    def analyze_bread_meal(
+        self,
+        bread_type: str = "Chapati",
+        bread_count: int = 2,
+        has_dal: bool = True,
+        dal_type: str = "Dal Tadka",
+        has_sabzi: bool = True,
+        sabzi_type: str = "Aloo Gobi",
+        has_curd: bool = False,
+        has_salad: bool = True,
+        meta: Optional[Dict[str, Any]] = None
+    ) -> BreadCompositeDecompositionResult:
+        """
+        Deconstructs Bread + Dal + Sabzi composite plate into individual items.
+        """
+        return BreadMealDecomposer.decompose(
+            bread_type=bread_type,
+            bread_count=bread_count,
+            has_dal=has_dal,
+            dal_type=dal_type,
+            has_sabzi=has_sabzi,
+            sabzi_type=sabzi_type,
+            has_curd=has_curd,
+            has_salad=has_salad,
+            meta=meta
+        )
+
+    def analyze_paratha_thali(
+        self,
+        paratha_type: str = "Aloo Paratha",
+        paratha_count: int = 2,
+        curd_katori_g: float = 120.0,
+        has_white_butter_slab: bool = True,
+        pickle_spoon_g: float = 20.0,
+        meta: Optional[Dict[str, Any]] = None
+    ) -> BreadCompositeDecompositionResult:
+        """
+        Decomposes Stuffed Paratha Thali with separate white butter slab, curd, and pickle.
+        """
+        return ParathaThaliDecomposer.decompose(
+            paratha_type=paratha_type,
+            paratha_count=paratha_count,
+            curd_katori_g=curd_katori_g,
+            has_white_butter_slab=has_white_butter_slab,
+            pickle_spoon_g=pickle_spoon_g,
+            meta=meta
+        )
+
+    def analyze_chole_bhature(
+        self,
+        bhatura_count: int = 2,
+        chole_bowl_g: float = 250.0,
+        has_pickled_onions: bool = True,
+        has_green_chutney: bool = True,
+        meta: Optional[Dict[str, Any]] = None
+    ) -> BreadCompositeDecompositionResult:
+        """
+        Decomposes Chole Bhature platter into bhaturas, chole curry, and accompaniments.
+        """
+        return CholeBhatureBreadDecomposer.decompose(
+            bhatura_count=bhatura_count,
+            chole_bowl_g=chole_bowl_g,
+            has_pickled_onions=has_pickled_onions,
+            has_green_chutney=has_green_chutney,
+            meta=meta
+        )
+
+    def analyze_bread_composite_plate(
+        self,
+        plate_title: str,
+        items: List[Dict[str, Any]]
+    ) -> Section82BreadMultiOutput:
+        """
+        Calculates Section 82 compliant multi-item bread plate output.
+        """
+        return BreadRecipeNutritionCalculator.calculate_composite_plate(
+            plate_title=plate_title,
+            items=items
+        )
+
 production_orchestrator = ProductionInferenceOrchestrator()
+
 
