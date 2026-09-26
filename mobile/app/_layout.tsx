@@ -38,6 +38,7 @@ function RootStack() {
         <Stack.Screen name="premium" />
         <Stack.Screen name="meal-planner" />
         <Stack.Screen name="nutrition-coach" />
+        <Stack.Screen name="admin-registrations" />
       </Stack>
     </>
   );

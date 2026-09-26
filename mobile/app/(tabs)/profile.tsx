@@ -489,6 +489,17 @@ export default function ProfileScreen() {
                 {isSyncingSheets ? "Syncing..." : "Sync Pending Registrations"}
               </Text>
             </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.viewSheetBtn, { backgroundColor: colors.surfaceHighlight, borderColor: colors.border }]}
+              onPress={() => router.push("/admin-registrations")}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="grid-outline" size={16} color="#10B981" />
+              <Text style={[styles.viewSheetBtnText, { color: colors.text }]}>
+                Open Registrations Space (Live Sheet)
+              </Text>
+            </TouchableOpacity>
           </View>
 
           <View style={[styles.apiConfigBox, { borderTopColor: colors.surfaceHighlight }]}>
@@ -890,6 +901,20 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   syncSheetsBtnText: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  viewSheetBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    height: 40,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginTop: 8,
+  },
+  viewSheetBtnText: {
     fontSize: 12,
     fontWeight: "700",
   },

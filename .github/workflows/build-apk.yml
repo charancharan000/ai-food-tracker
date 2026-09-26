@@ -59,19 +59,17 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.2-apk
-          name: "AI Food Tracker v1.0.2 APK"
+          tag_name: v1.0.3-apk
+          name: "AI Food Tracker v1.0.3 APK"
           body: |
-            ### AI Food Tracker Android APK v1.0.2 (Pro Membership & Support Center)
+            ### AI Food Tracker Android APK v1.0.3 (Live Registrations Space & Pre-configured Webhook)
             Download the standalone `.apk` directly to your Android device.
 
             **Highlights:**
-            - Private Google Live Sheets Webhook integration for user registrations.
+            - Pre-configured live streaming webhook: user registrations immediately appear on your live dashboard.
+            - In-app Live Registrations Space viewer.
             - Dedicated in-app Support Center (Email: codewithsan0607@gmail.com).
-            - Pro VIP Membership Club with exclusive features:
-              • AI Smart Meal Planner & Recipe Generator
-              • AI Nutrition Coach interactive assistant
-              • Clinical-grade macro and micronutrient targets
+            - Pro VIP Membership Club with AI Meal Planner & AI Nutrition Coach.
             - Embedded Hermes bytecode JavaScript bundle.
 
             **Installation Instructions:**
