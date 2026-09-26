@@ -1,0 +1,19 @@
+# GPU Training Requirements for NutriScan AI Food Vision Models
+# Compatible with PyTorch 2.3+ with CUDA 11.8 / 12.1 / 12.4
+torch>=2.3.0
+torchvision>=0.18.0
+timm>=0.9.16
+albumentations>=1.4.4
+opencv-python-headless>=4.9.0.80
+scikit-learn>=1.4.2
+scipy>=1.13.0
+imagehash>=4.3.1
+pillow>=10.3.0
+tqdm>=4.66.2
+pycocotools>=2.0.7
+numpy>=1.26.4
+pandas>=2.2.2
+matplotlib>=3.8.4
+seaborn>=0.13.2
+tensorboard>=2.16.2
+pydantic>=2.7.0
