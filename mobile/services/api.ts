@@ -24,10 +24,10 @@ export function getAutoDetectedBaseUrl(): string {
 
 export const apiClient: AxiosInstance = axios.create({
   baseURL: getAutoDetectedBaseUrl(),
-  timeout: 35000,
+  timeout: 4000,
   headers: {
-    "Accept": "application/json",
-  }
+    Accept: "application/json",
+  },
 });
 
 apiClient.interceptors.request.use(
@@ -37,7 +37,7 @@ apiClient.interceptors.request.use(
       if (customUrl && customUrl !== DEFAULT_API_URL) {
         config.baseURL = customUrl;
       }
-      
+
       const token = await storage.getToken();
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;

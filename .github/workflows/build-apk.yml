@@ -59,18 +59,21 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.0-apk
-          name: "AI Food Tracker v1.0.0 APK"
+          tag_name: v1.0.1-apk
+          name: "AI Food Tracker v1.0.1 APK"
           body: |
-            ### AI Food Tracker Android APK (Standalone Offline Release)
-            Download the standalone `.apk` directly to your Android device to install and test without Expo Go or Metro bundler.
+            ### AI Food Tracker Android APK v1.0.1 (Standalone Offline-First Release)
+            Download the standalone `.apk` directly to your Android device.
+
+            **Highlights:**
+            - Full offline-first support: registration, meal tracking, nutrition targets, and water logging work offline without a local server.
+            - Embedded Hermes bytecode JavaScript bundle.
 
             **Installation Instructions:**
             1. Download `ai-food-tracker.apk` below directly on your Android phone.
-            2. Open the file and allow "Install from Unknown Sources" when prompted.
+            2. If updating from previous version, tap Update.
             3. Launch AI Food Tracker.
           files: |
             mobile/android/app/build/outputs/apk/release/ai-food-tracker.apk
-            mobile/android/app/build/outputs/apk/release/app-release.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
