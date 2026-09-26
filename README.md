@@ -44,6 +44,10 @@ Open the Expo Go app on your physical device and scan the terminal QR code, or p
 - `i` to launch iOS simulator
 - `w` to run web preview
 
+### 3. Standalone Android APK
+
+Pre-built Android `.apk` binaries are automatically generated and available on the [Releases](https://github.com/charancharan000/ai-food-tracker/releases) page.
+
 ## Configuration
 
 ### Backend (`backend/.env`)

@@ -21,6 +21,7 @@
       }
     },
     "android": {
+      "package": "com.nutriscan.ai",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0F172A"

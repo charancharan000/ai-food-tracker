@@ -6,6 +6,16 @@ web-build/
 dist/
 build/
 *.tsbuildinfo
+android/
+**/android/
+ios/
+**/ios/
+.gradle/
+**/android/.gradle/
+**/android/app/build/
+**/android/build/
+*.apk
+*.aab
 
 __pycache__/
 **/__pycache__/

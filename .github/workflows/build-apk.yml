@@ -1,0 +1,72 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: npm install
+
+      - name: Prebuild Android project
+        working-directory: mobile
+        run: npx expo prebuild --platform android --clean
+
+      - name: Make Gradle executable
+        working-directory: mobile/android
+        run: chmod +x gradlew
+
+      - name: Build Debug APK
+        working-directory: mobile/android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-food-tracker-apk
+          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main'
+        with:
+          tag_name: v1.0.0-apk
+          name: "AI Food Tracker v1.0.0 APK"
+          body: |
+            ### AI Food Tracker Android APK
+            Download the standalone `.apk` directly to your Android device to install and test without Expo Go.
+
+            **Installation Instructions:**
+            1. Download `app-debug.apk` directly on your Android phone.
+            2. Open the file and allow "Install from Unknown Sources" when prompted.
+            3. Launch AI Food Tracker.
+          files: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
