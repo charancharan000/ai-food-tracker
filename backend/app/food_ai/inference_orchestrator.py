@@ -294,6 +294,42 @@ from app.food_ai.nutrition_engine.vegetarian_recipes import (
     Section88VegetarianSingleOutput,
     Section51UserCorrectionRecord
 )
+from app.food_ai.taxonomy.nonveg_master_taxonomy import (
+    get_nonveg_food_class,
+    resolve_nonveg_food_by_name,
+    NonVegFoodClassRecord
+)
+from app.food_ai.datasets.nonveg_hard_negatives import (
+    NONVEG_CONFUSION_REGISTRY,
+    disambiguate_nonveg_pair,
+    FishSpeciesClassifier,
+    MeatAnatomyCutClassifier,
+    BoneStateDetector,
+    NonVegPieceCounter,
+    Section89NonNegotiableNonVegVerifier
+)
+from app.food_ai.portion_engine.nonveg_portions import (
+    BoneToEdibleWeightCalculator,
+    QualitativeNonVegOilEstimator,
+    NonVegComponentMassSplitter,
+    TwoPhotoPortionEngine
+)
+from app.food_ai.datasets.nonveg_composite_decomposer import (
+    NonVegBiryaniPlatterDecomposer,
+    SouthIndianNonVegMealDecomposer,
+    NorthIndianNonVegMealDecomposer,
+    KeralaNonVegMealDecomposer,
+    NonVegCompositeDecompositionResult
+)
+from app.food_ai.nutrition_engine.nonveg_recipes import (
+    NonVegRecipeNutritionCalculator,
+    Section67NonVegAnnotation,
+    Section70CalorieUncertaintyOutput,
+    Section61UnknownNonVegOutput,
+    Section64UserCorrectionRecord,
+    Section88NonVegSingleOutput,
+    Section79FinalAppNonVegOutput
+)
 
 
 
@@ -2202,6 +2238,169 @@ class ProductionInferenceOrchestrator:
         return Section75NonNegotiableVegetarianVerifier.verify_prediction(
             candidate_dish=candidate_dish,
             visual_features=visual_features
+        )
+
+    # =========================================================================
+    # PART 13 — NON-VEGETARIAN RECOGNITION & NUTRITION METHODS (Sections 1–90)
+    # =========================================================================
+
+    def analyze_nonveg_dish(
+        self,
+        dish_name: str,
+        portion_category: str = "Medium",
+        piece_count: Optional[int] = None,
+        bone_state: Optional[str] = None,
+        oil_tier: str = "moderate",
+        restaurant_style: bool = True
+    ) -> Section88NonVegSingleOutput:
+        """
+        Analyzes a single non-vegetarian dish factoring bone deduction, portion, and oil tier.
+        """
+        return NonVegRecipeNutritionCalculator.calculate_dish_nutrition(
+            dish_name=dish_name,
+            portion_category=portion_category,
+            piece_count=piece_count,
+            bone_state=bone_state,
+            oil_tier=oil_tier,
+            restaurant_style=restaurant_style
+        )
+
+    def analyze_biryani_platter(self) -> NonVegCompositeDecompositionResult:
+        """
+        Deconstructs Biryani Feast Meal verifying Raita/Salan decoupling (Sections 25, 26, 41, 68, 69, 80).
+        """
+        return NonVegBiryaniPlatterDecomposer.decompose()
+
+    def analyze_south_indian_nonveg_meal(self) -> NonVegCompositeDecompositionResult:
+        """
+        Deconstructs South Indian Non-Veg Meal into constituent items (Section 42).
+        """
+        return SouthIndianNonVegMealDecomposer.decompose()
+
+    def analyze_north_indian_nonveg_meal(self) -> NonVegCompositeDecompositionResult:
+        """
+        Deconstructs North Indian Non-Veg Meal into constituent items (Section 43).
+        """
+        return NorthIndianNonVegMealDecomposer.decompose()
+
+    def analyze_kerala_nonveg_meal(self) -> NonVegCompositeDecompositionResult:
+        """
+        Deconstructs Kerala Non-Veg Meal into constituent items (Section 44).
+        """
+        return KeralaNonVegMealDecomposer.decompose()
+
+    def disambiguate_nonveg_pair(
+        self,
+        pair_id: str,
+        visual_features: Dict[str, Any]
+    ) -> Tuple[str, float, str]:
+        """
+        Disambiguates high-confusion non-vegetarian candidate pairs (Section 55 & 73).
+        """
+        return disambiguate_nonveg_pair(pair_id, visual_features)
+
+    def classify_fish_species(
+        self,
+        visual_evidence: Dict[str, Any]
+    ) -> Tuple[str, float, str]:
+        """
+        Classifies fish species or returns 'Species uncertain' (Section 14 & Rule 2).
+        """
+        return FishSpeciesClassifier.classify_species(visual_evidence)
+
+    def classify_meat_anatomy_cut(
+        self,
+        visual_features: Dict[str, Any]
+    ) -> Tuple[str, float, str]:
+        """
+        Classifies anatomical cut or returns 'Cut uncertain' (Section 5 & 11).
+        """
+        return MeatAnatomyCutClassifier.classify_cut(visual_features)
+
+    def detect_bone_state(
+        self,
+        visual_cues: Dict[str, Any]
+    ) -> Tuple[str, float, str]:
+        """
+        Detects bone state: bone_in, boneless, mixed, unknown (Section 6 & Rule 9).
+        """
+        return BoneStateDetector.detect_bone_state(visual_cues)
+
+    def verify_section_89_nonveg_rule(
+        self,
+        candidate_dish: str,
+        visual_features: Dict[str, Any]
+    ) -> Tuple[bool, str]:
+        """
+        Enforces Section 89 Non-Negotiable Non-Veg Quality Rules (30 rules).
+        """
+        return Section89NonNegotiableNonVegVerifier.verify_prediction(
+            candidate_dish=candidate_dish,
+            visual_features=visual_features
+        )
+
+    def generate_nonveg_section_67_annotation(
+        self,
+        image_id: str,
+        dish_name: str,
+        region: str = "Tamil Nadu",
+        portion_g: float = 150.0,
+        piece_count: Optional[int] = 6,
+        bone_state: str = "bone_in",
+        cooking_method: str = "gravy",
+        bbox: Optional[List[int]] = None
+    ) -> Section67NonVegAnnotation:
+        """
+        Generates Section 67 Non-Veg Annotation Schema JSON.
+        """
+        return NonVegRecipeNutritionCalculator.generate_section_67_annotation(
+            image_id=image_id,
+            dish_name=dish_name,
+            region=region,
+            portion_g=portion_g,
+            piece_count=piece_count,
+            bone_state=bone_state,
+            cooking_method=cooking_method,
+            bbox=bbox
+        )
+
+    def generate_nonveg_section_70_uncertainty(
+        self,
+        dish_name: str,
+        portion_category: str = "Medium"
+    ) -> Section70CalorieUncertaintyOutput:
+        """
+        Generates Section 70 Calorie Uncertainty Output schema.
+        """
+        return NonVegRecipeNutritionCalculator.generate_section_70_uncertainty(
+            dish_name=dish_name,
+            portion_category=portion_category
+        )
+
+    def generate_nonveg_section_61_unknown(
+        self,
+        image_id: Optional[str] = None
+    ) -> Section61UnknownNonVegOutput:
+        """
+        Generates Section 61 & 83 Unknown Non-Veg Fallback schema.
+        """
+        return NonVegRecipeNutritionCalculator.generate_section_61_unknown(image_id=image_id)
+
+    def record_nonveg_user_correction(
+        self,
+        image_id: str,
+        original_prediction: str,
+        user_correction: str,
+        confidence: float = 0.62
+    ) -> Section64UserCorrectionRecord:
+        """
+        Records user correction for active learning pipeline (Section 64).
+        """
+        return NonVegRecipeNutritionCalculator.record_user_correction(
+            image_id=image_id,
+            original_prediction=original_prediction,
+            user_correction=user_correction,
+            confidence=confidence
         )
 
 
