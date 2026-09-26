@@ -48,6 +48,33 @@ from app.food_ai.nutrition_engine.north_indian_recipes import (
     Section43ModelOutput
 )
 
+from app.food_ai.taxonomy.west_indian_master_taxonomy import (
+    get_west_food_class,
+    resolve_west_food_by_name
+)
+from app.food_ai.datasets.west_indian_hard_negatives import (
+    WEST_INDIAN_CONFUSION_REGISTRY,
+    disambiguate_west_indian_pair,
+    DhoklaFamilyClassifier,
+    BhakriRotlaClassifier,
+    BatataVadaClassifier,
+    PuranPoliVerifier,
+    ChaatComponentSegmenter
+)
+from app.food_ai.datasets.west_indian_composite_decomposer import (
+    VadaPavDecomposer,
+    PavBhajiDecomposer,
+    MisalPavDecomposer,
+    GujaratiThaliDecomposer,
+    GoanFishThaliDecomposer,
+    WestIndianCompositeDecompositionResult,
+    PackagingFilter
+)
+from app.food_ai.nutrition_engine.west_indian_recipes import (
+    WestIndianRecipeNutritionCalculator,
+    Section51ModelOutput
+)
+
 
 # =============================================================================
 # SECTION 54 — 7-DIMENSIONAL CONFIDENCE METRICS MODEL
@@ -736,6 +763,53 @@ class ProductionInferenceOrchestrator:
         Decomposes a traditional Himachali Dham into 6-7 authentic courses.
         """
         return HimachaliDhamDecomposer.decompose(dham_meta)
+
+    def analyze_west_indian_dish(
+        self,
+        food_identifier: str,
+        visual_cues: Optional[Dict[str, Any]] = None,
+        custom_weight_g: Optional[float] = None,
+        count: Optional[int] = None
+    ) -> Section51ModelOutput:
+        """
+        Calculates and returns exact Section 51 compliant output for a West Indian dish.
+        """
+        return WestIndianRecipeNutritionCalculator.calculate_dish_nutrition(
+            food_identifier=food_identifier,
+            visual_cues=visual_cues,
+            custom_weight_g=custom_weight_g,
+            count=count
+        )
+
+    def analyze_vada_pav(self, meta: Optional[Dict[str, Any]] = None) -> WestIndianCompositeDecompositionResult:
+        """
+        Decomposes Mumbai Vada Pav into Pav, Batata Vada, Chutneys, and Salted Chilli.
+        """
+        return VadaPavDecomposer.decompose(meta)
+
+    def analyze_pav_bhaji(self, meta: Optional[Dict[str, Any]] = None) -> WestIndianCompositeDecompositionResult:
+        """
+        Decomposes Pav Bhaji into Bhaji, Butter-Toasted Pav, Butter Dollop, and Garnishes.
+        """
+        return PavBhajiDecomposer.decompose(meta)
+
+    def analyze_misal_pav(self, meta: Optional[Dict[str, Any]] = None) -> WestIndianCompositeDecompositionResult:
+        """
+        Decomposes Misal Pav into Matki Usal, Kat/Tarri, Farsan, Sev, Garnishes, and Pav.
+        """
+        return MisalPavDecomposer.decompose(meta)
+
+    def analyze_gujarati_thali(self, meta: Optional[Dict[str, Any]] = None) -> WestIndianCompositeDecompositionResult:
+        """
+        Decomposes a Traditional Gujarati Thali into 10-14 discrete authentic items.
+        """
+        return GujaratiThaliDecomposer.decompose(meta)
+
+    def analyze_goan_fish_thali(self, meta: Optional[Dict[str, Any]] = None) -> WestIndianCompositeDecompositionResult:
+        """
+        Decomposes an Authentic Goan Fish Thali into 6-8 discrete authentic items.
+        """
+        return GoanFishThaliDecomposer.decompose(meta)
 
 production_orchestrator = ProductionInferenceOrchestrator()
 
