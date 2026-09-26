@@ -13,6 +13,8 @@ export interface User {
   carb_target: number;
   fat_target: number;
   daily_water_target_ml: number;
+  is_premium?: boolean;
+  membership_tier?: "free" | "pro" | "vip";
   created_at: string;
 }
 
@@ -32,6 +34,9 @@ export interface RegisterPayload {
   weight_kg?: number;
   activity_level?: string;
   goal?: string;
+  daily_calorie_target?: number;
+  is_premium?: boolean;
+  membership_tier?: "free" | "pro" | "vip";
 }
 
 export interface LoginPayload {

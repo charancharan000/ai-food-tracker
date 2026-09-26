@@ -59,14 +59,19 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.1-apk
-          name: "AI Food Tracker v1.0.1 APK"
+          tag_name: v1.0.2-apk
+          name: "AI Food Tracker v1.0.2 APK"
           body: |
-            ### AI Food Tracker Android APK v1.0.1 (Standalone Offline-First Release)
+            ### AI Food Tracker Android APK v1.0.2 (Pro Membership & Support Center)
             Download the standalone `.apk` directly to your Android device.
 
             **Highlights:**
-            - Full offline-first support: registration, meal tracking, nutrition targets, and water logging work offline without a local server.
+            - Private Google Live Sheets Webhook integration for user registrations.
+            - Dedicated in-app Support Center (Email: codewithsan0607@gmail.com).
+            - Pro VIP Membership Club with exclusive features:
+              • AI Smart Meal Planner & Recipe Generator
+              • AI Nutrition Coach interactive assistant
+              • Clinical-grade macro and micronutrient targets
             - Embedded Hermes bytecode JavaScript bundle.
 
             **Installation Instructions:**

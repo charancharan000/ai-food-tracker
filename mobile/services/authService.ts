@@ -2,6 +2,7 @@ import { apiClient } from "./api";
 import { AuthResponse, LoginPayload, RegisterPayload, User } from "../types/auth";
 import { storage } from "../utils/storage";
 import { estimateCalorieTargets } from "../utils/nutrition";
+import { sheetsService } from "./sheetsService";
 
 export const authService = {
   async register(payload: RegisterPayload): Promise<AuthResponse> {
@@ -12,6 +13,7 @@ export const authService = {
         await storage.setToken(data.access_token);
         await storage.setUser(data.user);
       }
+      sheetsService.recordRegistration(data.user, payload).catch(() => {});
       return data;
     } catch (e: any) {
       if (e.response && e.response.status === 400 && e.response.data?.detail?.includes("already registered")) {
@@ -42,12 +44,16 @@ export const authService = {
         carb_target: targets.carbs,
         fat_target: targets.fat,
         daily_water_target_ml: targets.water,
+        is_premium: false,
+        membership_tier: "free",
         created_at: new Date().toISOString(),
       };
 
       const token = "offline_token_" + Date.now();
       await storage.setToken(token);
       await storage.setUser(localUser);
+
+      sheetsService.recordRegistration(localUser, payload).catch(() => {});
 
       return {
         access_token: token,
@@ -98,6 +104,8 @@ export const authService = {
         carb_target: targets.carbs,
         fat_target: targets.fat,
         daily_water_target_ml: targets.water,
+        is_premium: false,
+        membership_tier: "free",
         created_at: new Date().toISOString(),
       };
 

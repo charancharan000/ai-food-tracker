@@ -34,6 +34,10 @@ function RootStack() {
             headerBackTitle: "Back",
           }}
         />
+        <Stack.Screen name="support" />
+        <Stack.Screen name="premium" />
+        <Stack.Screen name="meal-planner" />
+        <Stack.Screen name="nutrition-coach" />
       </Stack>
     </>
   );
