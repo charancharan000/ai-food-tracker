@@ -330,6 +330,42 @@ from app.food_ai.nutrition_engine.nonveg_recipes import (
     Section88NonVegSingleOutput,
     Section79FinalAppNonVegOutput
 )
+from app.food_ai.taxonomy.sweets_master_taxonomy import (
+    get_sweet_food_class,
+    resolve_sweet_food_by_name,
+    SweetFoodClassRecord
+)
+from app.food_ai.datasets.sweets_hard_negatives import (
+    SWEETS_CONFUSION_REGISTRY,
+    disambiguate_sweet_pair,
+    DiamondSweetVerifier,
+    SpiralSweetVerifier,
+    WhiteSweetVerifier,
+    Section87NonNegotiableSweetVerifier
+)
+from app.food_ai.portion_engine.sweets_portions import (
+    SWEET_PORTION_DATABASE,
+    QualitativeSugarEstimator,
+    FriedSweetFatEstimator,
+    SweetComponentMassSplitter
+)
+from app.food_ai.datasets.sweets_composite_decomposer import (
+    DiwaliMithaiBoxDecomposer,
+    SouthIndianFestiveSweetPlatterDecomposer,
+    BengaliMithaiThaliDecomposer,
+    GaneshChaturthiPrasadDecomposer,
+    JalebiRabriDessertPairingDecomposer,
+    SweetCompositeDecompositionResult
+)
+from app.food_ai.nutrition_engine.sweets_recipes import (
+    SweetRecipeNutritionCalculator,
+    Section65SweetAnnotation,
+    Section85CalorieUncertaintyOutput,
+    Section59UnknownSweetOutput,
+    Section61SweetUserCorrectionRecord,
+    Section88SweetSingleOutput,
+    Section81FinalAppSweetOutput
+)
 
 
 
@@ -2400,6 +2436,178 @@ class ProductionInferenceOrchestrator:
             image_id=image_id,
             original_prediction=original_prediction,
             user_correction=user_correction,
+            confidence=confidence
+        )
+
+    # =========================================================================
+    # PART 14 — SWEETS & DESSERTS RECOGNITION & NUTRITION METHODS (Sections 1–88)
+    # =========================================================================
+
+    def analyze_sweet_dish(
+        self,
+        dish_name: str,
+        piece_count: Optional[int] = None,
+        serving_size_category: str = "Medium",
+        syrup_override: Optional[str] = None,
+        shop_style: bool = True
+    ) -> Section88SweetSingleOutput:
+        """
+        Analyzes a single sweet/dessert factoring piece count, sugar tier, and fat profile.
+        """
+        return SweetRecipeNutritionCalculator.calculate_sweet_nutrition(
+            dish_name=dish_name,
+            piece_count=piece_count,
+            serving_size_category=serving_size_category,
+            syrup_override=syrup_override,
+            shop_style=shop_style
+        )
+
+    def analyze_diwali_mithai_box(self) -> SweetCompositeDecompositionResult:
+        """
+        Deconstructs Diwali Mixed Mithai Gift Box into independent items (Section 48 & 82 Scenario 1).
+        """
+        return DiwaliMithaiBoxDecomposer.decompose()
+
+    def analyze_south_indian_sweet_platter(self) -> SweetCompositeDecompositionResult:
+        """
+        Deconstructs South Indian Festive Sweet Platter into constituent items (Section 82 Scenario 2).
+        """
+        return SouthIndianFestiveSweetPlatterDecomposer.decompose()
+
+    def analyze_bengali_mithai_thali(self) -> SweetCompositeDecompositionResult:
+        """
+        Deconstructs Bengali Mishti Thali into constituent items (Section 82 Scenario 3).
+        """
+        return BengaliMithaiThaliDecomposer.decompose()
+
+    def analyze_ganesh_chaturthi_prasad(self) -> SweetCompositeDecompositionResult:
+        """
+        Deconstructs Ganesh Chaturthi Prasad Platter into constituent items (Section 82 Scenario 4).
+        """
+        return GaneshChaturthiPrasadDecomposer.decompose()
+
+    def analyze_jalebi_rabri_pairing(self) -> SweetCompositeDecompositionResult:
+        """
+        Deconstructs Jalebi with Malai Rabri Dessert Pairing (Section 68 & 82 Scenario 5).
+        """
+        return JalebiRabriDessertPairingDecomposer.decompose()
+
+    def disambiguate_sweet_pair(
+        self,
+        pair_id: str,
+        visual_features: Dict[str, Any]
+    ) -> Tuple[str, float, str]:
+        """
+        Disambiguates high-confusion sweet candidate pairs (Section 55 & 75).
+        """
+        return disambiguate_sweet_pair(pair_id, visual_features)
+
+    def verify_diamond_sweet(
+        self,
+        candidate: str,
+        visual_features: Dict[str, Any]
+    ) -> Tuple[bool, str]:
+        """
+        Enforces Section 7: Never assume every diamond sweet is Kaju Katli.
+        """
+        return DiamondSweetVerifier.verify_diamond_sweet(candidate, visual_features)
+
+    def verify_spiral_sweet(
+        self,
+        candidate: str,
+        visual_features: Dict[str, Any]
+    ) -> Tuple[bool, str]:
+        """
+        Enforces Section 14 & 15: Never assume every spiral sweet is Jalebi.
+        """
+        return SpiralSweetVerifier.verify_spiral_sweet(candidate, visual_features)
+
+    def verify_white_sweet(
+        self,
+        candidate: str,
+        visual_features: Dict[str, Any]
+    ) -> Tuple[bool, str]:
+        """
+        Enforces Section 18: Never assume every white round sweet is Rasgulla.
+        """
+        return WhiteSweetVerifier.verify_white_sweet(candidate, visual_features)
+
+    def verify_section_87_sweet_rule(
+        self,
+        candidate_dish: str,
+        visual_features: Dict[str, Any]
+    ) -> Tuple[bool, str]:
+        """
+        Enforces Section 87 Non-Negotiable Sweets & Desserts Quality Rules (30 rules).
+        """
+        return Section87NonNegotiableSweetVerifier.verify_prediction(
+            candidate_dish=candidate_dish,
+            visual_features=visual_features
+        )
+
+    def generate_sweet_section_65_annotation(
+        self,
+        image_id: str,
+        dish_name: str,
+        region: str = "Tamil Nadu",
+        count: Optional[int] = 3,
+        estimated_weight_g: float = 105.0,
+        cooking_method: str = "fried",
+        syrup_state: str = "coated",
+        bbox: Optional[List[int]] = None
+    ) -> Section65SweetAnnotation:
+        """
+        Generates Section 65 Sweet Annotation Schema JSON.
+        """
+        return SweetRecipeNutritionCalculator.generate_section_65_annotation(
+            image_id=image_id,
+            dish_name=dish_name,
+            region=region,
+            count=count,
+            estimated_weight_g=estimated_weight_g,
+            cooking_method=cooking_method,
+            syrup_state=syrup_state,
+            bbox=bbox
+        )
+
+    def generate_sweet_section_85_uncertainty(
+        self,
+        dish_name: str,
+        piece_count: Optional[int] = None,
+        serving_size_category: str = "Medium"
+    ) -> Section85CalorieUncertaintyOutput:
+        """
+        Generates Section 85 Calorie Uncertainty Output schema.
+        """
+        return SweetRecipeNutritionCalculator.generate_section_85_uncertainty(
+            dish_name=dish_name,
+            piece_count=piece_count,
+            serving_size_category=serving_size_category
+        )
+
+    def generate_sweet_section_59_unknown(
+        self,
+        image_id: Optional[str] = None
+    ) -> Section59UnknownSweetOutput:
+        """
+        Generates Section 59 & 84 Unknown Sweet Fallback schema.
+        """
+        return SweetRecipeNutritionCalculator.generate_section_59_unknown(image_id=image_id)
+
+    def record_sweet_user_correction(
+        self,
+        image_id: str,
+        original_prediction: str,
+        corrected_label: str,
+        confidence: float = 0.68
+    ) -> Section61SweetUserCorrectionRecord:
+        """
+        Records user correction for active learning pipeline (Section 61).
+        """
+        return SweetRecipeNutritionCalculator.record_user_correction(
+            image_id=image_id,
+            original_prediction=original_prediction,
+            corrected_label=corrected_label,
             confidence=confidence
         )
 
