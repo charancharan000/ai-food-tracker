@@ -2,7 +2,7 @@
   "expo": {
     "name": "NutriScan AI",
     "slug": "nutriscan-ai",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "nutriscan",
@@ -22,7 +22,7 @@
     },
     "android": {
       "package": "com.nutriscan.ai",
-      "versionCode": 4,
+      "versionCode": 5,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0F172A"

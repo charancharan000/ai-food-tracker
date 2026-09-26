@@ -5,9 +5,17 @@ import { localStore } from "../utils/localStorage";
 import { storage } from "../utils/storage";
 
 export const foodService = {
-  async analyzeFood(imageUri: string, mimeType: string = "image/jpeg"): Promise<FoodAnalysisResponse> {
+  async analyzeFood(
+    imageUri: string,
+    mimeType: string = "image/jpeg",
+    dishHint?: string
+  ): Promise<FoodAnalysisResponse> {
     try {
       const formData = new FormData();
+
+      if (dishHint) {
+        formData.append("hint", dishHint);
+      }
 
       if (Platform.OS === "web") {
         const response = await fetch(imageUri);
@@ -32,7 +40,7 @@ export const foodService = {
 
       return response.data;
     } catch {
-      return localStore.getMockAnalysis();
+      return localStore.getMockAnalysis(dishHint, imageUri);
     }
   },
 

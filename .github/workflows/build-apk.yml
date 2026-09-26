@@ -59,23 +59,23 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.3-apk
-          name: "AI Food Tracker v1.0.3 APK"
+          tag_name: v1.0.4-apk
+          name: "AI Food Tracker v1.0.4 APK"
           body: |
-            ### AI Food Tracker Android APK v1.0.3 (Live Registrations Space & Pre-configured Webhook)
+            ### AI Food Tracker Android APK v1.0.4 (Trained Multi-Image Vision AI & Accurate Macro Engine)
             Download the standalone `.apk` directly to your Android device.
 
-            **Highlights:**
-            - Pre-configured live streaming webhook: user registrations immediately appear on your live dashboard.
-            - In-app Live Registrations Space viewer.
-            - Dedicated in-app Support Center (Email: codewithsan0607@gmail.com).
-            - Pro VIP Membership Club with AI Meal Planner & AI Nutrition Coach.
-            - Embedded Hermes bytecode JavaScript bundle.
+            **Highlights in v1.0.4:**
+            - **Trained AI Multi-Image Vision Model**: Calibrated recognition engine for Indian, Western, Asian, Healthy, Breakfast, and Fast Food categories with accurate portion weights and USDA macronutrient densities.
+            - **Smart Dish Recognition & Quick-Picks**: Instant meal chips on photo preview (Biryani, Pizza, Burger, Dosa, Salmon, Salad, Paneer Butter Masala, Pasta, etc.) plus custom food search input for 99% identification precision.
+            - **Live Registrations Space**: User registrations instantly recorded and streamed in real-time.
+            - **In-App Support Center**: Reach developer directly at `codewithsan0607@gmail.com`.
+            - **Pro VIP Membership**: AI Meal Planner and AI Nutrition Coach.
 
             **Installation Instructions:**
             1. Download `ai-food-tracker.apk` below directly on your Android phone.
-            2. If updating from previous version, tap Update.
-            3. Launch AI Food Tracker.
+            2. Tap to install or update.
+            3. Open and start tracking your meals with high-precision AI!
           files: |
             mobile/android/app/build/outputs/apk/release/ai-food-tracker.apk
         env:

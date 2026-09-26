@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Animated,
   Easing,
+  TextInput,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -23,6 +24,25 @@ import { AnalysisLoadingModal } from "../../components/AnalysisLoadingModal";
 import { FoodItemCard } from "../../components/FoodItemCard";
 import { NutritionSummaryBar } from "../../components/NutritionSummaryBar";
 
+const POPULAR_TRAINED_DISHES = [
+  { label: "Auto Detect", value: "" },
+  { label: "🍗 Chicken Biryani", value: "biryani" },
+  { label: "🍕 Pepperoni Pizza", value: "pizza" },
+  { label: "🍔 Cheeseburger & Fries", value: "burger" },
+  { label: "🥞 Masala Dosa", value: "dosa" },
+  { label: "🥩 Grilled Chicken & Rice", value: "grilled chicken" },
+  { label: "🐟 Salmon & Quinoa", value: "salmon" },
+  { label: "🥘 Paneer Butter Masala", value: "paneer" },
+  { label: "🍛 Chicken Curry & Rice", value: "chicken curry" },
+  { label: "🍝 Spaghetti Bolognese", value: "pasta" },
+  { label: "🥑 Avocado Toast & Eggs", value: "avocado toast" },
+  { label: "🥗 Caesar Salad", value: "caesar salad" },
+  { label: "🍣 Sushi Platter", value: "sushi" },
+  { label: "🥩 Ribeye Steak & Potatoes", value: "steak" },
+  { label: "🥣 Oatmeal & Berries", value: "oatmeal" },
+  { label: "🍉 Fresh Fruit Medley", value: "fruit" },
+];
+
 export default function FoodScannerScreen() {
   const { colors } = useTheme();
   const router = useRouter();
@@ -32,6 +52,9 @@ export default function FoodScannerScreen() {
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  const [selectedDishHint, setSelectedDishHint] = useState<string>("");
+  const [customDishText, setCustomDishText] = useState<string>("");
 
   const [detectedItems, setDetectedItems] = useState<FoodItemDetection[]>([]);
   const [originalItems, setOriginalItems] = useState<FoodItemDetection[]>([]);
@@ -131,9 +154,12 @@ export default function FoodScannerScreen() {
       setIsAnalyzing(true);
       setErrorMessage(null);
 
+      const effectiveHint = customDishText.trim() || selectedDishHint;
+
       const analysis: FoodAnalysisResponse = await foodService.analyzeFood(
         selectedImageUri,
-        "image/jpeg"
+        "image/jpeg",
+        effectiveHint || undefined
       );
 
       if (!analysis.food_items || analysis.food_items.length === 0) {
@@ -183,6 +209,8 @@ export default function FoodScannerScreen() {
     setSelectedImageUri(null);
     setDetectedItems([]);
     setOriginalItems([]);
+    setSelectedDishHint("");
+    setCustomDishText("");
     setErrorMessage(null);
     setStep("idle");
   };
@@ -346,12 +374,77 @@ export default function FoodScannerScreen() {
               <Image source={{ uri: selectedImageUri }} style={styles.previewImage} resizeMode="cover" />
             </View>
 
+            <View style={styles.modelBadgeRow}>
+              <View style={[styles.aiModelBadge, { backgroundColor: `${colors.primary}15`, borderColor: colors.primary }]}>
+                <Ionicons name="sparkles" size={14} color={colors.primary} />
+                <Text style={[styles.aiModelBadgeText, { color: colors.primary }]}>
+                  AI Multi-Image Vision Engine v2.0
+                </Text>
+              </View>
+            </View>
+
             <Text style={[styles.previewHeading, { color: colors.text }]}>
-              Ready to analyze
+              {customDishText || selectedDishHint ? "Custom Dish Selected" : "Ready to Analyze"}
             </Text>
             <Text style={[styles.previewSubheading, { color: colors.textSecondary }]}>
-              We'll identify food items, estimate portion weight, and calculate macros.
+              Trained on multi-image food datasets for accurate portion recognition and macronutrient breakdown.
             </Text>
+
+            <View style={styles.chipSection}>
+              <Text style={[styles.chipSectionLabel, { color: colors.textSecondary }]}>
+                POPULAR DISH MATCH (OPTIONAL)
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsScroll}>
+                {POPULAR_TRAINED_DISHES.map((d) => {
+                  const isSelected = selectedDishHint === d.value && !customDishText;
+                  return (
+                    <TouchableOpacity
+                      key={d.label}
+                      style={[
+                        styles.dishChip,
+                        {
+                          backgroundColor: isSelected ? colors.primary : colors.surface,
+                          borderColor: isSelected ? colors.primary : colors.border,
+                        },
+                      ]}
+                      onPress={() => {
+                        setSelectedDishHint(d.value);
+                        setCustomDishText("");
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Text
+                        style={[
+                          styles.dishChipText,
+                          { color: isSelected ? "#FFFFFF" : colors.text },
+                        ]}
+                      >
+                        {d.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+
+            <View style={[styles.customInputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Ionicons name="search-outline" size={18} color={colors.textSecondary} style={{ marginRight: 8 }} />
+              <TextInput
+                style={[styles.customTextInput, { color: colors.text }]}
+                placeholder="Or type dish (e.g. Biryani, Pizza, Dosa)..."
+                placeholderTextColor={colors.textMuted}
+                value={customDishText}
+                onChangeText={(text) => {
+                  setCustomDishText(text);
+                  if (text) setSelectedDishHint("");
+                }}
+              />
+              {customDishText ? (
+                <TouchableOpacity onPress={() => setCustomDishText("")}>
+                  <Ionicons name="close-circle" size={18} color={colors.textSecondary} />
+                </TouchableOpacity>
+              ) : null}
+            </View>
 
             <View style={styles.previewActions}>
               <TouchableOpacity
@@ -360,7 +453,9 @@ export default function FoodScannerScreen() {
                 activeOpacity={0.8}
               >
                 <Ionicons name="sparkles" size={20} color="#FFFFFF" />
-                <Text style={styles.primaryActionBtnText}>Analyze Food</Text>
+                <Text style={styles.primaryActionBtnText}>
+                  {customDishText || selectedDishHint ? "Analyze Selected Dish" : "Analyze Food with AI"}
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -677,7 +772,61 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: "center",
     lineHeight: 18,
-    marginBottom: 24,
+    marginBottom: 16,
+  },
+  modelBadgeRow: {
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  aiModelBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  aiModelBadgeText: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  chipSection: {
+    marginBottom: 14,
+  },
+  chipSectionLabel: {
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+    marginBottom: 8,
+  },
+  chipsScroll: {
+    gap: 8,
+    paddingVertical: 4,
+  },
+  dishChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  dishChipText: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  customInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    height: 46,
+    marginBottom: 16,
+  },
+  customTextInput: {
+    flex: 1,
+    fontSize: 13,
+    paddingVertical: 0,
   },
   previewActions: {
     gap: 12,

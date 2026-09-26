@@ -3,6 +3,7 @@ import { Meal, MealCreatePayload, FoodAnalysisResponse, MealType } from "../type
 import { DashboardToday, DashboardSummary, DailySummaryItem } from "../types/dashboard";
 import { User } from "../types/auth";
 import { calculateTotals } from "./nutrition";
+import { findMatchingFoodEntry } from "./foodDataset";
 
 const LOCAL_MEALS_KEY = "@nutriscan_local_meals";
 const LOCAL_WATER_KEY = "@nutriscan_local_water";
@@ -270,104 +271,7 @@ export const localStore = {
     };
   },
 
-  getMockAnalysis(): FoodAnalysisResponse {
-    const presets: FoodAnalysisResponse[] = [
-      {
-        food_items: [
-          {
-            name: "Grilled Chicken Breast",
-            estimated_weight_g: 150,
-            servings: 1,
-            calories: 247,
-            protein_g: 46.5,
-            carbs_g: 0,
-            fat_g: 5.4,
-            fiber_g: 0,
-            sugar_g: 0,
-            sodium_mg: 380,
-            confidence: 0.96,
-          },
-          {
-            name: "Brown Rice",
-            estimated_weight_g: 150,
-            servings: 1,
-            calories: 168,
-            protein_g: 3.8,
-            carbs_g: 35.2,
-            fat_g: 1.4,
-            fiber_g: 2.4,
-            sugar_g: 0.4,
-            sodium_mg: 5,
-            confidence: 0.92,
-          },
-          {
-            name: "Steamed Broccoli",
-            estimated_weight_g: 100,
-            servings: 1,
-            calories: 35,
-            protein_g: 2.4,
-            carbs_g: 7.2,
-            fat_g: 0.4,
-            fiber_g: 2.6,
-            sugar_g: 1.4,
-            sodium_mg: 33,
-            confidence: 0.94,
-          },
-        ],
-        total: {
-          calories: 450,
-          protein_g: 52.7,
-          carbs_g: 42.4,
-          fat_g: 7.2,
-          fiber_g: 5.0,
-          sugar_g: 1.8,
-          sodium_mg: 418,
-        },
-        notes: "Balanced high-protein fitness meal with complex carbohydrates and greens.",
-      },
-      {
-        food_items: [
-          {
-            name: "Avocado Toast",
-            estimated_weight_g: 140,
-            servings: 1,
-            calories: 280,
-            protein_g: 6.5,
-            carbs_g: 26.0,
-            fat_g: 17.5,
-            fiber_g: 7.2,
-            sugar_g: 1.8,
-            sodium_mg: 290,
-            confidence: 0.95,
-          },
-          {
-            name: "Poached Egg",
-            estimated_weight_g: 50,
-            servings: 1,
-            calories: 72,
-            protein_g: 6.3,
-            carbs_g: 0.4,
-            fat_g: 4.8,
-            fiber_g: 0,
-            sugar_g: 0.2,
-            sodium_mg: 142,
-            confidence: 0.97,
-          },
-        ],
-        total: {
-          calories: 352,
-          protein_g: 12.8,
-          carbs_g: 26.4,
-          fat_g: 22.3,
-          fiber_g: 7.2,
-          sugar_g: 2.0,
-          sodium_mg: 432,
-        },
-        notes: "Nutrient-dense breakfast rich in healthy monounsaturated fats and micronutrients.",
-      },
-    ];
-
-    const idx = Math.floor(Math.random() * presets.length);
-    return presets[idx];
+  getMockAnalysis(dishHint?: string, seedString?: string): FoodAnalysisResponse {
+    return findMatchingFoodEntry(dishHint, seedString);
   },
 };
