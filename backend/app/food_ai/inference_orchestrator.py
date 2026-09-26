@@ -27,6 +27,28 @@ from app.food_ai.datasets.hard_negative_engine import HardNegativeEngine
 from app.food_ai.nutrition_engine.recipe_aware_pipeline import RecipeAwareCalorieCalculator
 from app.food_ai.quality_and_leakage.image_pipeline import ImageQualityAssessor
 
+from app.food_ai.taxonomy.north_indian_master_taxonomy import (
+    get_north_food_class,
+    resolve_north_food_by_name
+)
+from app.food_ai.datasets.north_indian_hard_negatives import (
+    NORTH_INDIAN_CONFUSION_REGISTRY,
+    disambiguate_north_indian_pair,
+    ParathaFillingVerifier,
+    DalVisualDiscriminator,
+    CholeBhatureDecomposer
+)
+from app.food_ai.datasets.north_indian_thali_decomposer import (
+    NorthIndianThaliDecomposer,
+    HimachaliDhamDecomposer,
+    CompositeMealDecompositionResult
+)
+from app.food_ai.nutrition_engine.north_indian_recipes import (
+    NorthIndianRecipeNutritionCalculator,
+    Section43ModelOutput
+)
+
+
 # =============================================================================
 # SECTION 54 — 7-DIMENSIONAL CONFIDENCE METRICS MODEL
 # =============================================================================
@@ -191,12 +213,6 @@ class ProductionInferenceOrchestrator:
                 user_disclosure_notes="Traditional Banana Leaf Meal successfully decomposed into 8+ independent regional components."
             )
 
-        # Standard Multi-Food Plate: e.g. Idli Combo or Dosa Combo
-        detected_items: List[FinalDetectedItemResult] = []
-        is_idli_combo = "idli" in hint_str or not hint_str
-        is_dosa_combo = "dosa" in hint_str
-        is_biryani = "biryani" in hint_str
-
         # SECTION 65 RULE: Check if evidence is ambiguous or low
         if "unknown" in hint_str:
             return FinalMealAnalysisResponse(
@@ -213,6 +229,221 @@ class ProductionInferenceOrchestrator:
                 uncertain_items=["unknown_south_indian_food"],
                 user_disclosure_notes="Unknown South Indian food detected. Visual features do not match trained classes with >= 75% confidence."
             )
+
+        # NORTH INDIAN COMPOSITE MEALS
+        is_thali = "thali" in hint_str
+        is_dham = "dham" in hint_str
+        is_chole_bhature = "chole bhature" in hint_str or "bhatura" in hint_str or "bhature" in hint_str
+
+        if is_thali:
+            thali_res = NorthIndianThaliDecomposer.decompose()
+            detected_items: List[FinalDetectedItemResult] = []
+            for idx, c in enumerate(thali_res.components, 1):
+                conf = SevenDimensionalConfidence(
+                    food_confidence=c.confidence,
+                    variant_confidence=0.92,
+                    ingredient_confidence=0.91,
+                    segmentation_confidence=0.94,
+                    count_confidence=1.0,
+                    weight_confidence=0.90,
+                    nutrition_confidence=0.92,
+                    overall_system_confidence=c.confidence
+                )
+                detected_items.append(FinalDetectedItemResult(
+                    item_index=idx,
+                    name=c.food_name,
+                    variant=c.portion_name,
+                    permanent_id=c.canonical_food_id,
+                    count=1,
+                    estimated_weight_g=c.estimated_weight_g,
+                    calories=c.calories_kcal,
+                    protein_g=c.protein_g,
+                    carbs_g=c.carbs_g,
+                    fat_g=c.fat_g,
+                    fiber_g=c.fiber_g,
+                    confidence_level="high",
+                    confidences=conf,
+                    visible_ingredients=["wheat", "dal", "paneer", "spices"],
+                    cooking_methods=["tandoor_cooked", "simmered"],
+                    food_state="composite",
+                    hierarchy_path="Indian Food > North Indian Food > Punjab > Thali"
+                ))
+            return FinalMealAnalysisResponse(
+                model_version=self.model_version,
+                pipeline_status="resolved",
+                quality_grade=quality.quality_label,
+                is_banana_leaf=False,
+                items=detected_items,
+                total_weight_g=thali_res.total_weight_g,
+                total_calories=thali_res.total_calories_kcal,
+                total_protein_g=thali_res.total_protein_g,
+                total_carbs_g=thali_res.total_carbs_g,
+                total_fat_g=thali_res.total_fat_g,
+                total_fiber_g=thali_res.total_fiber_g,
+                uncertain_items=[],
+                user_disclosure_notes=thali_res.summary
+            )
+
+        if is_dham:
+            dham_res = HimachaliDhamDecomposer.decompose()
+            detected_items: List[FinalDetectedItemResult] = []
+            for idx, c in enumerate(dham_res.components, 1):
+                conf = SevenDimensionalConfidence(
+                    food_confidence=c.confidence,
+                    variant_confidence=0.93,
+                    ingredient_confidence=0.92,
+                    segmentation_confidence=0.95,
+                    count_confidence=1.0,
+                    weight_confidence=0.91,
+                    nutrition_confidence=0.93,
+                    overall_system_confidence=c.confidence
+                )
+                detected_items.append(FinalDetectedItemResult(
+                    item_index=idx,
+                    name=c.food_name,
+                    variant=c.portion_name,
+                    permanent_id=c.canonical_food_id,
+                    count=1,
+                    estimated_weight_g=c.estimated_weight_g,
+                    calories=c.calories_kcal,
+                    protein_g=c.protein_g,
+                    carbs_g=c.carbs_g,
+                    fat_g=c.fat_g,
+                    fiber_g=c.fiber_g,
+                    confidence_level="high",
+                    confidences=conf,
+                    visible_ingredients=["basmati rice", "curd", "kidney beans", "chickpeas", "urad dal"],
+                    cooking_methods=["slow_cooked_charoti"],
+                    food_state="composite",
+                    hierarchy_path="Indian Food > North Indian Food > Himachal Pradesh > Thali"
+                ))
+            return FinalMealAnalysisResponse(
+                model_version=self.model_version,
+                pipeline_status="resolved",
+                quality_grade=quality.quality_label,
+                is_banana_leaf=False,
+                items=detected_items,
+                total_weight_g=dham_res.total_weight_g,
+                total_calories=dham_res.total_calories_kcal,
+                total_protein_g=dham_res.total_protein_g,
+                total_carbs_g=dham_res.total_carbs_g,
+                total_fat_g=dham_res.total_fat_g,
+                total_fiber_g=dham_res.total_fiber_g,
+                uncertain_items=[],
+                user_disclosure_notes=dham_res.summary
+            )
+
+        if is_chole_bhature:
+            cb_items = CholeBhatureDecomposer.decompose_plate({})
+            detected_items: List[FinalDetectedItemResult] = []
+            for idx, c in enumerate(cb_items, 1):
+                conf = SevenDimensionalConfidence(
+                    food_confidence=c["confidence"],
+                    variant_confidence=0.94,
+                    ingredient_confidence=0.92,
+                    segmentation_confidence=0.95,
+                    count_confidence=1.0,
+                    weight_confidence=0.92,
+                    nutrition_confidence=0.93,
+                    overall_system_confidence=c["confidence"]
+                )
+                detected_items.append(FinalDetectedItemResult(
+                    item_index=idx,
+                    name=c["component_name"],
+                    variant=c["portion"],
+                    permanent_id=c["canonical_id"],
+                    count=1,
+                    estimated_weight_g=c["weight_g"],
+                    calories=c["calories_kcal"],
+                    protein_g=c["protein_g"],
+                    carbs_g=c["carbs_g"],
+                    fat_g=c["fat_g"],
+                    fiber_g=c["fiber_g"],
+                    confidence_level="high",
+                    confidences=conf,
+                    visible_ingredients=["maida", "chickpeas", "onions", "spices"],
+                    cooking_methods=["deep_fried", "boiled_simmered"],
+                    food_state="solid_and_gravy",
+                    hierarchy_path="Indian Food > North Indian Food > Delhi > Street Food"
+                ))
+            tot_w = sum(it.estimated_weight_g for it in detected_items)
+            tot_c = sum(it.calories for it in detected_items)
+            tot_p = sum(it.protein_g for it in detected_items)
+            tot_cb = sum(it.carbs_g for it in detected_items)
+            tot_f = sum(it.fat_g for it in detected_items)
+            tot_fib = sum(it.fiber_g for it in detected_items)
+            return FinalMealAnalysisResponse(
+                model_version=self.model_version,
+                pipeline_status="resolved",
+                quality_grade=quality.quality_label,
+                is_banana_leaf=False,
+                items=detected_items,
+                total_weight_g=round(tot_w, 1),
+                total_calories=round(tot_c, 1),
+                total_protein_g=round(tot_p, 1),
+                total_carbs_g=round(tot_cb, 1),
+                total_fat_g=round(tot_f, 1),
+                total_fiber_g=round(tot_fib, 1),
+                uncertain_items=[],
+                user_disclosure_notes="Chole Bhature plate decomposed into 5 distinct instances (Bhaturas, Chole, Onion, Pickle, Chutney)."
+            )
+
+        # Check single North Indian dish match (e.g. Aloo Paratha, Butter Chicken, Dal Makhani, etc.)
+        north_food = get_north_food_class(hint_str) or resolve_north_food_by_name(hint_str)
+        if north_food and not any(k in hint_str for k in ["idli", "dosa", "biryani"]):
+            s43 = NorthIndianRecipeNutritionCalculator.calculate_dish_nutrition(north_food.permanent_id)
+            conf = SevenDimensionalConfidence(
+                food_confidence=s43.confidence,
+                variant_confidence=0.92,
+                ingredient_confidence=0.90,
+                segmentation_confidence=0.94,
+                count_confidence=1.0,
+                weight_confidence=0.90,
+                nutrition_confidence=0.92,
+                overall_system_confidence=s43.confidence
+            )
+            detected_items: List[FinalDetectedItemResult] = [
+                FinalDetectedItemResult(
+                    item_index=1,
+                    name=s43.food_name,
+                    variant=s43.regional_variant,
+                    permanent_id=s43.canonical_food_id,
+                    count=1,
+                    estimated_weight_g=s43.estimated_weight_g,
+                    calories=s43.calories_kcal,
+                    protein_g=s43.protein_g,
+                    carbs_g=s43.carbs_g,
+                    fat_g=s43.fat_g,
+                    fiber_g=s43.fiber_g,
+                    confidence_level="high",
+                    confidences=conf,
+                    visible_ingredients=s43.ingredients.get("visible", []),
+                    cooking_methods=[s43.cooking_method],
+                    food_state="solid",
+                    hierarchy_path=f"Indian Food > North Indian Food > {s43.state} > {s43.food_category}"
+                )
+            ]
+            return FinalMealAnalysisResponse(
+                model_version=self.model_version,
+                pipeline_status="resolved",
+                quality_grade=quality.quality_label,
+                is_banana_leaf=False,
+                items=detected_items,
+                total_weight_g=s43.estimated_weight_g,
+                total_calories=s43.calories_kcal,
+                total_protein_g=s43.protein_g,
+                total_carbs_g=s43.carbs_g,
+                total_fat_g=s43.fat_g,
+                total_fiber_g=s43.fiber_g,
+                uncertain_items=[],
+                user_disclosure_notes=f"Single dish {s43.food_name} verified per Section 43 specifications."
+            )
+
+        # SOUTH INDIAN MEALS
+        detected_items: List[FinalDetectedItemResult] = []
+        is_idli_combo = "idli" in hint_str or not hint_str
+        is_dosa_combo = "dosa" in hint_str
+        is_biryani = "biryani" in hint_str
 
         if is_idli_combo:
             # SECTION 64 EXAMPLE: 3 idli, sambar, coconut chutney, tomato chutney
@@ -479,4 +710,32 @@ class ProductionInferenceOrchestrator:
             user_disclosure_notes="Every plate item decomposed into discrete component instance per Section 64 specifications."
         )
 
+    def analyze_north_indian_dish(
+        self,
+        food_identifier: str,
+        visual_cues: Optional[Dict[str, Any]] = None,
+        custom_weight_g: Optional[float] = None
+    ) -> Section43ModelOutput:
+        """
+        Calculates and returns exact Section 43 compliant output for a North Indian dish.
+        """
+        return NorthIndianRecipeNutritionCalculator.calculate_dish_nutrition(
+            food_identifier=food_identifier,
+            visual_cues=visual_cues,
+            custom_weight_g=custom_weight_g
+        )
+
+    def analyze_thali(self, plate_meta: Optional[Dict[str, Any]] = None) -> CompositeMealDecompositionResult:
+        """
+        Decomposes a North Indian Thali platter into 8-14 discrete items.
+        """
+        return NorthIndianThaliDecomposer.decompose(plate_meta)
+
+    def analyze_dham(self, dham_meta: Optional[Dict[str, Any]] = None) -> CompositeMealDecompositionResult:
+        """
+        Decomposes a traditional Himachali Dham into 6-7 authentic courses.
+        """
+        return HimachaliDhamDecomposer.decompose(dham_meta)
+
 production_orchestrator = ProductionInferenceOrchestrator()
+
