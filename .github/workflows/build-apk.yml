@@ -42,15 +42,17 @@ jobs:
         working-directory: mobile/android
         run: chmod +x gradlew
 
-      - name: Build Debug APK
+      - name: Build Standalone Release APK
         working-directory: mobile/android
-        run: ./gradlew assembleDebug --no-daemon
+        run: |
+          ./gradlew assembleRelease --no-daemon
+          cp app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/ai-food-tracker.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ai-food-tracker-apk
-          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          path: mobile/android/app/build/outputs/apk/release/ai-food-tracker.apk
           retention-days: 30
 
       - name: Publish GitHub Release
@@ -60,13 +62,15 @@ jobs:
           tag_name: v1.0.0-apk
           name: "AI Food Tracker v1.0.0 APK"
           body: |
-            ### AI Food Tracker Android APK
-            Download the standalone `.apk` directly to your Android device to install and test without Expo Go.
+            ### AI Food Tracker Android APK (Standalone Offline Release)
+            Download the standalone `.apk` directly to your Android device to install and test without Expo Go or Metro bundler.
 
             **Installation Instructions:**
-            1. Download `app-debug.apk` directly on your Android phone.
+            1. Download `ai-food-tracker.apk` below directly on your Android phone.
             2. Open the file and allow "Install from Unknown Sources" when prompted.
             3. Launch AI Food Tracker.
-          files: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          files: |
+            mobile/android/app/build/outputs/apk/release/ai-food-tracker.apk
+            mobile/android/app/build/outputs/apk/release/app-release.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
