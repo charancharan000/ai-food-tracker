@@ -222,6 +222,43 @@ from app.food_ai.nutrition_engine.bread_recipes import (
     Section62DetectedItem,
     Section62FinalAppOutput
 )
+from app.food_ai.taxonomy.curry_master_taxonomy import (
+    get_curry_food_class,
+    resolve_curry_food_by_name,
+    CurryFoodClassRecord
+)
+from app.food_ai.datasets.curry_hard_negatives import (
+    CURRY_CONFUSION_REGISTRY,
+    disambiguate_curry_pair,
+    DalVsSambarVerifier,
+    PaneerPieceDetector,
+    ChickenMeatPieceCounter,
+    FishSpeciesVerifier,
+    GravyBaseClassifier,
+    CurryConsistencyEstimator,
+    Section73NonNegotiableCurryVerifier
+)
+from app.food_ai.portion_engine.curry_portions import (
+    CurryPortionEngine,
+    CurryFloatingOilEstimator,
+    CurryProteinGravySplitter
+)
+from app.food_ai.datasets.curry_composite_decomposer import (
+    CurryRiceDecomposer,
+    CurryBreadDecomposer,
+    BananaLeafThaliDecomposer,
+    CurryCompositeDecompositionResult
+)
+from app.food_ai.nutrition_engine.curry_recipes import (
+    CurryRecipeNutritionCalculator,
+    Section57CurryAnnotation,
+    Section57ChickenCurryAnnotation,
+    Section52UnknownCurryOutput,
+    Section66FinalAppOutput,
+    Section67BananaLeafMealOutput,
+    Section70CalorieUncertaintyOutput,
+    Section88CurrySingleOutput
+)
 
 
 
@@ -1769,6 +1806,203 @@ class ProductionInferenceOrchestrator:
             candidate_bread=candidate_bread,
             visual_features=visual_features
         )
+
+    # =========================================================================
+    # PART 11: INDIAN DAL, CURRY & GRAVY METHODS
+    # =========================================================================
+
+    def analyze_curry_dish(
+        self,
+        curry_name: str,
+        portion_category: str = "Medium",
+        oil_sheen: str = "medium",
+        piece_count: Optional[int] = None,
+        is_bone_in: bool = False,
+        is_restaurant_style: bool = False
+    ) -> Section88CurrySingleOutput:
+        """
+        Analyzes a single curry dish and generates Section 88 single curry output.
+        """
+        return CurryRecipeNutritionCalculator.generate_section_88_single_output(
+            curry_name=curry_name,
+            portion_category=portion_category,
+            oil_sheen=oil_sheen
+        )
+
+    def analyze_curry_rice_plate(
+        self,
+        rice_type: str = "Steamed Sona Masoori Rice",
+        rice_grams: float = 200.0,
+        curry_name: str = "Yellow Dal Tadka",
+        curry_grams: float = 160.0,
+        accompaniments: Optional[List[Dict[str, Any]]] = None
+    ) -> CurryCompositeDecompositionResult:
+        """
+        Decomposes Rice + Curry meal (Section 39) into separate constituent items.
+        """
+        return CurryRiceDecomposer.decompose(
+            rice_type=rice_type,
+            rice_grams=rice_grams,
+            curry_name=curry_name,
+            curry_grams=curry_grams,
+            accompaniments=accompaniments
+        )
+
+    def analyze_curry_bread_plate(
+        self,
+        bread_name: str = "Tandoori Roti",
+        bread_count: int = 2,
+        bread_piece_weight_g: float = 40.0,
+        curry_name: str = "Paneer Butter Masala",
+        curry_weight_g: float = 200.0,
+        paneer_piece_count: Optional[int] = 5
+    ) -> CurryCompositeDecompositionResult:
+        """
+        Decomposes Bread + Curry meal (Section 40) into discrete bread piece counts and curry mass.
+        """
+        return CurryBreadDecomposer.decompose(
+            bread_name=bread_name,
+            bread_count=bread_count,
+            bread_piece_weight_g=bread_piece_weight_g,
+            curry_name=curry_name,
+            curry_weight_g=curry_weight_g,
+            paneer_piece_count=paneer_piece_count
+        )
+
+    def analyze_banana_leaf_meal(
+        self,
+        leaf_style: str = "South Indian Tamil / Kerala Banana Leaf Meal",
+        has_non_veg: bool = False,
+        non_veg_dish: Optional[str] = None
+    ) -> CurryCompositeDecompositionResult:
+        """
+        Decomposes South Indian Banana Leaf Feast (Section 67) into all individual items.
+        Strictly prevents monolithic calorie reporting.
+        """
+        return BananaLeafThaliDecomposer.decompose(
+            leaf_style=leaf_style,
+            has_non_veg=has_non_veg,
+            non_veg_dish=non_veg_dish
+        )
+
+    def generate_curry_section_57_annotation(
+        self,
+        curry_name: str,
+        portion_category: str = "Medium",
+        oil_sheen: str = "medium"
+    ) -> Section57CurryAnnotation:
+        """
+        Generates Section 57 Single Curry Annotation schema.
+        """
+        return CurryRecipeNutritionCalculator.generate_section_57_curry_annotation(
+            curry_name=curry_name,
+            portion_category=portion_category,
+            oil_sheen=oil_sheen
+        )
+
+    def generate_curry_section_57_chicken_annotation(
+        self,
+        curry_name: str = "Homestyle Chicken Curry",
+        portion_category: str = "Medium",
+        piece_count: int = 3,
+        is_bone_in: bool = True,
+        oil_sheen: str = "medium"
+    ) -> Section57ChickenCurryAnnotation:
+        """
+        Generates Section 57 Chicken Curry Annotation schema with protein/gravy split.
+        """
+        return CurryRecipeNutritionCalculator.generate_section_57_chicken_annotation(
+            curry_name=curry_name,
+            portion_category=portion_category,
+            piece_count=piece_count,
+            is_bone_in=is_bone_in,
+            oil_sheen=oil_sheen
+        )
+
+    def generate_curry_section_52_unknown_fallback(
+        self,
+        color: str = "yellow",
+        consistency: str = "medium"
+    ) -> Section52UnknownCurryOutput:
+        """
+        Generates Section 52 Unknown Curry Fallback output.
+        """
+        return CurryRecipeNutritionCalculator.generate_section_52_unknown_fallback(
+            color=color,
+            consistency=consistency
+        )
+
+    def generate_curry_section_66_app_output(
+        self,
+        curry_name: str,
+        portion_category: str = "Medium",
+        oil_sheen: str = "medium"
+    ) -> Section66FinalAppOutput:
+        """
+        Generates Section 66 Final App Output with calibrated range and macronutrients.
+        """
+        return CurryRecipeNutritionCalculator.generate_section_66_app_output(
+            curry_name=curry_name,
+            portion_category=portion_category,
+            oil_sheen=oil_sheen
+        )
+
+    def generate_curry_section_70_uncertainty_output(
+        self,
+        curry_name: str,
+        portion_category: str = "Medium"
+    ) -> Section70CalorieUncertaintyOutput:
+        """
+        Generates Section 70 Calorie Uncertainty Output.
+        """
+        return CurryRecipeNutritionCalculator.generate_section_70_uncertainty_output(
+            curry_name=curry_name,
+            portion_category=portion_category
+        )
+
+    def disambiguate_curry_pair(
+        self,
+        pair_id: str,
+        visual_cues: Dict[str, Any]
+    ) -> Tuple[str, float, str]:
+        """
+        Disambiguates high-confusion curry pairs (Section 42).
+        """
+        return disambiguate_curry_pair(pair_id, visual_cues)
+
+    def verify_dal_vs_sambar(
+        self,
+        visual_cues: Dict[str, Any]
+    ) -> Tuple[str, float, str]:
+        """
+        Disambiguates Dal vs Sambar with Section 9 fallback:
+        'Dal/sambar-like dish — exact type uncertain'.
+        """
+        return DalVsSambarVerifier.verify(visual_cues)
+
+    def verify_fish_species(
+        self,
+        visual_cues: Dict[str, Any]
+    ) -> Tuple[str, float, str]:
+        """
+        Verifies fish curry species with Section 25 fallback:
+        'Fish curry — species uncertain'.
+        """
+        return FishSpeciesVerifier.verify(visual_cues)
+
+    def verify_section_73_curry_rule(
+        self,
+        candidate_curry: str,
+        visual_features: Dict[str, Any]
+    ) -> Tuple[bool, str]:
+        """
+        Enforces Section 73 Non-Negotiable Curry Quality Rules.
+        """
+        return Section73NonNegotiableCurryVerifier.verify_prediction(
+            candidate_dish=candidate_curry,
+            visual_features=visual_features
+        )
+
 
 production_orchestrator = ProductionInferenceOrchestrator()
 
