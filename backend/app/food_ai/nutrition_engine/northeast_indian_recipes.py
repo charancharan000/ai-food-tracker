@@ -27,8 +27,49 @@ from app.food_ai.portion_engine.northeast_indian_portions import (
 )
 
 # =============================================================================
-# 1. SECTION 86 MODEL OUTPUT SCHEMA
+# 1. SECTION 74, 78, 82, AND 86 MODEL OUTPUT SCHEMAS
 # =============================================================================
+
+class Section74SingleFoodJSON(BaseModel):
+    """
+    Implements Section 74: Single Food Output JSON Schema.
+    """
+    food_name: str
+    region: str = "Northeast India"
+    state: str
+    count: int = 1
+    estimated_weight_g: float
+    cooking_method: str
+    confidence: float
+    nutrition: Dict[str, Optional[float]] = Field(default_factory=lambda: {
+        "calories_kcal": None,
+        "protein_g": None,
+        "carbohydrates_g": None,
+        "fat_g": None
+    })
+
+class Section78UnknownFoodOutput(BaseModel):
+    """
+    Implements Section 78: Unknown Food System Output.
+    """
+    food_name: str = "Unknown Northeast Indian Food"
+    specific_dish: str = "Unknown"
+    confidence: float = 0.24
+    action: str = "Ask user for confirmation"
+
+class Section82ItemOutput(BaseModel):
+    food_name: str
+    weight_g: float
+    confidence: float
+
+class Section82ModelOutput(BaseModel):
+    """
+    Implements Section 82: Final Multi-Food Model Output Example Schema.
+    """
+    meal_region: str = "Northeast India"
+    confidence: float
+    items: List[Section82ItemOutput]
+    nutrition_status: str = "Estimate using verified database and recipe variation"
 
 class NortheastCalorieRange(BaseModel):
     min: float
@@ -57,6 +98,7 @@ class Section86ModelOutput(BaseModel):
     confidence: float
     uncertainty: str
     user_confirmation_required: bool = False
+
 
 # =============================================================================
 # 2. RECIPE VARIATION DATABASE (Section 65, 66)
@@ -361,3 +403,95 @@ class NortheastRecipeNutritionCalculator:
             uncertainty=unc_notes,
             user_confirmation_required=False
         )
+
+    @classmethod
+    def generate_section_74_single_food(
+        cls,
+        food_identifier: str,
+        count: int = 8,
+        cooking_method: str = "steamed"
+    ) -> Section74SingleFoodJSON:
+        """
+        Implements Section 74: Single Food Output JSON Schema.
+        Example: Chicken Momo, 8 pieces, 320g, confidence 0.94, nutrition from verified db.
+        """
+        food_cls = resolve_northeast_food_by_name(food_identifier)
+        if not food_cls:
+            food_cls = get_northeast_food_class(food_identifier)
+
+        food_name = food_cls.canonical_name if food_cls else food_identifier
+        state = food_cls.state if food_cls else "Northeast India"
+        unit_wt = 40.0
+        if food_cls:
+            if "momo" in food_cls.canonical_name.lower():
+                unit_wt = 40.0
+            else:
+                unit_wt = food_cls.default_serving_weight_g / max(1, count)
+        est_wt = round(count * unit_wt, 1)
+
+        return Section74SingleFoodJSON(
+            food_name=food_name,
+            region="Northeast India",
+            state=state,
+            count=count,
+            estimated_weight_g=est_wt,
+            cooking_method=cooking_method,
+            confidence=0.94 if food_cls else 0.80,
+            nutrition={
+                "calories_kcal": None,
+                "protein_g": None,
+                "carbohydrates_g": None,
+                "fat_g": None
+            }
+        )
+
+    @classmethod
+    def generate_section_78_unknown_fallback(
+        cls,
+        confidence: float = 0.24
+    ) -> Section78UnknownFoodOutput:
+        """
+        Implements Section 78: Unknown Food System Fallback Schema.
+        """
+        return Section78UnknownFoodOutput(
+            food_name="Unknown Northeast Indian Food",
+            specific_dish="Unknown",
+            confidence=confidence,
+            action="Ask user for confirmation"
+        )
+
+    @classmethod
+    def generate_section_82_multi_food(
+        cls,
+        meal_region: str = "Northeast India",
+        items_spec: Optional[List[Dict[str, Any]]] = None
+    ) -> Section82ModelOutput:
+        """
+        Implements Section 82: Final Model Output Example Schema for multi-food plate.
+        Example: Rice (220g, 0.99), Pork Preparation (150g, 0.86), Bamboo Shoot (65g, 0.79), Chutney (20g, 0.73).
+        """
+        if items_spec is None:
+            items_spec = [
+                {"food_name": "Rice", "weight_g": 220.0, "confidence": 0.99},
+                {"food_name": "Pork Preparation", "weight_g": 150.0, "confidence": 0.86},
+                {"food_name": "Bamboo Shoot Preparation", "weight_g": 65.0, "confidence": 0.79},
+                {"food_name": "Chutney", "weight_g": 20.0, "confidence": 0.73}
+            ]
+
+        item_objs = [
+            Section82ItemOutput(
+                food_name=it["food_name"],
+                weight_g=float(it["weight_g"]),
+                confidence=float(it["confidence"])
+            ) for it in items_spec
+        ]
+
+        avg_conf = round(sum(it.confidence for it in item_objs) / len(item_objs), 2) if item_objs else 0.85
+
+        return Section82ModelOutput(
+            meal_region=meal_region,
+            confidence=avg_conf,
+            items=item_objs,
+            nutrition_status="Estimate using verified database and recipe variation"
+        )
+

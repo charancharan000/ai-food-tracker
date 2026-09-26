@@ -39,6 +39,9 @@ from app.food_ai.datasets.northeast_indian_composite_decomposer import (
     NagaPlatterDecomposer,
     TripuriMuiBorokDecomposer,
     SikkimMealDecomposer,
+    ManipuriMealDecomposer,
+    MizoMealDecomposer,
+    ArunachalMealDecomposer,
     NortheastPackagingFilter,
     NortheastCompositeDecompositionResult
 )
@@ -49,6 +52,9 @@ from app.food_ai.portion_engine.northeast_indian_portions import (
 )
 from app.food_ai.nutrition_engine.northeast_indian_recipes import (
     NortheastRecipeNutritionCalculator,
+    Section74SingleFoodJSON,
+    Section78UnknownFoodOutput,
+    Section82ModelOutput,
     Section86ModelOutput
 )
 from app.food_ai.inference_orchestrator import production_orchestrator
@@ -73,10 +79,11 @@ def test_northeast_indian_taxonomy_and_8_states_coverage():
 
     required_states = [
         "Assam", "Meghalaya", "Manipur", "Mizoram",
-        "Nagaland", "Tripura", "Sikkim"
+        "Nagaland", "Tripura", "Arunachal Pradesh", "Sikkim"
     ]
     for st in required_states:
         assert st in states_found, f"State {st} missing in Northeast Indian taxonomy!"
+
 
 
 def test_northeast_multilingual_name_mapping():
@@ -400,3 +407,141 @@ def test_production_orchestrator_northeast_indian_methods():
     # Sikkim Meal
     s_res = production_orchestrator.analyze_sikkim_meal()
     assert s_res.platter_type == "thali"
+
+    # Manipuri Meal
+    m_res = production_orchestrator.analyze_manipuri_meal()
+    assert m_res.platter_type == "meal_plate"
+    assert m_res.state == "Manipur"
+
+    # Mizo Meal
+    mz_res = production_orchestrator.analyze_mizo_meal()
+    assert mz_res.platter_type == "meal_plate"
+    assert mz_res.state == "Mizoram"
+
+    # Arunachal Meal
+    ar_res = production_orchestrator.analyze_arunachal_meal()
+    assert ar_res.platter_type == "thali"
+    assert ar_res.state == "Arunachal Pradesh"
+
+
+# =============================================================================
+# 11. ARUNACHAL PRADESH DEDICATED DATASET & ALL 8 STATES DECOMPOSITION
+# =============================================================================
+
+def test_arunachal_pradesh_food_classes():
+    """Sections 31-33: Verifies Arunachal Pradesh classes with permanent AR_* IDs."""
+    ar_ids = [
+        "AR_MOMO_PORK_STEAMED",
+        "AR_MOMO_VEG_STEAMED",
+        "AR_THUKPA_CHICKEN",
+        "AR_BREAD_KHURA",
+        "AR_STEW_ZAN",
+        "AR_BAMBOO_EKUNG_PORK",
+        "AR_FERMENTED_CHHURPI_SOUP",
+        "AR_THALI_ARUNACHAL"
+    ]
+    for cid in ar_ids:
+        food = get_northeast_food_class(cid)
+        assert food is not None, f"Missing Arunachal food class: {cid}"
+        assert food.state == "Arunachal Pradesh"
+        assert food.hierarchy.level3_state == "Arunachal Pradesh"
+        assert len(food.key_ingredients) > 0
+
+
+def test_all_8_northeast_states_meal_decomposers():
+    """Section 54: Verifies full meal decomposition across all 8 Northeast states."""
+    decomposers = [
+        (AssameseThaliDecomposer, "Assam"),
+        (MeghalayaJadohPlatterDecomposer, "Meghalaya"),
+        (NagaPlatterDecomposer, "Nagaland"),
+        (TripuriMuiBorokDecomposer, "Tripura"),
+        (SikkimMealDecomposer, "Sikkim"),
+        (ManipuriMealDecomposer, "Manipur"),
+        (MizoMealDecomposer, "Mizoram"),
+        (ArunachalMealDecomposer, "Arunachal Pradesh")
+    ]
+    assert len(decomposers) == 8
+
+    for dec, expected_state in decomposers:
+        res = dec.decompose()
+        assert isinstance(res, NortheastCompositeDecompositionResult)
+        assert res.state == expected_state
+        assert res.total_components_detected >= 4
+        assert res.total_calories > 250.0
+        assert res.total_edible_weight_g > 300.0
+
+
+# =============================================================================
+# 12. SECTION 74, 78 & 82 STANDARDIZED SCHEMAS & SECTION 80 QUALITY RULES
+# =============================================================================
+
+def test_section_74_single_food_json_schema():
+    """Section 74: Verifies Single Food JSON Schema exact specification."""
+    single = production_orchestrator.generate_northeast_section_74_single_food(
+        food_identifier="NE_MOMO_PORK_STEAMED",
+        count=8,
+        cooking_method="steamed"
+    )
+    assert isinstance(single, Section74SingleFoodJSON)
+    assert single.food_name == "Steamed Pork Momo"
+    assert single.region == "Northeast India"
+    assert single.count == 8
+    assert single.estimated_weight_g > 200.0
+    assert single.cooking_method == "steamed"
+    assert single.confidence >= 0.90
+    assert "calories_kcal" in single.nutrition
+    assert "protein_g" in single.nutrition
+    assert "carbohydrates_g" in single.nutrition
+    assert "fat_g" in single.nutrition
+
+
+def test_section_78_unknown_food_fallback():
+    """Section 78: Verifies Unknown Food Fallback Schema."""
+    unknown = production_orchestrator.generate_northeast_section_78_unknown_fallback(confidence=0.24)
+    assert isinstance(unknown, Section78UnknownFoodOutput)
+    assert unknown.food_name == "Unknown Northeast Indian Food"
+    assert unknown.specific_dish == "Unknown"
+    assert unknown.confidence == 0.24
+    assert unknown.action == "Ask user for confirmation"
+
+
+def test_section_82_multi_food_model_output():
+    """Section 82: Verifies Multi-Food Model Output Example Schema."""
+    multi = production_orchestrator.generate_northeast_section_82_multi_food()
+    assert isinstance(multi, Section82ModelOutput)
+    assert multi.meal_region == "Northeast India"
+    assert multi.confidence >= 0.80
+    assert len(multi.items) == 4
+
+    item_names = [it.food_name for it in multi.items]
+    assert "Rice" in item_names
+    assert "Pork Preparation" in item_names
+    assert "Bamboo Shoot Preparation" in item_names
+    assert "Chutney" in item_names
+    assert multi.nutrition_status == "Estimate using verified database and recipe variation"
+
+
+def test_section_80_quality_rules_enforcement():
+    """Section 80: Quality Rules (never infer biryani from meat+rice, dumpling from momo alone, etc.)."""
+    # 1. Jadoh vs Biryani
+    jadoh_check = disambiguate_northeast_pair(
+        pair_id="CONF_JADOH_VS_PULAO_KHICHDI",
+        visual_features={"grain_type": "short_bold_indigenous_rice", "cooking_fat": "pork_fat_rendered"}
+    )
+    assert jadoh_check["selected_class_id"] == "ML_RICE_JADOH_PORK"
+    assert "Jadoh" in jadoh_check["resolution_notes"]
+
+    # 2. Galho vs Khichdi
+    galho_check = disambiguate_northeast_pair(
+        pair_id="CONF_JADOH_VS_GALHO",
+        visual_features={"consistency": "soupy_porridge", "has_axone": True, "has_leafy_greens": True}
+    )
+    assert galho_check["selected_class_id"] == "NL_RICE_GALHO"
+
+    # 3. Pitika vs Eromba
+    pitika_check = disambiguate_northeast_pair(
+        pair_id="CONF_ALOO_PITIKA_VS_EROMBA_MOSDENG",
+        visual_features={"has_ngari_fermented_fish": False, "oil_type": "raw_mustard_oil"}
+    )
+    assert pitika_check["selected_class_id"] == "AS_VEG_ALOO_PITIKA"
+

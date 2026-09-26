@@ -755,9 +755,207 @@ register_northeast_food(NortheastFoodClass(
 
 
 # =============================================================================
-# 7. ARUNACHAL PRADESH & PAN-NORTHEAST MOMO / THUKPA (Sections 32-35, 40, 41)
+# 7. ARUNACHAL PRADESH MASTER DATASET (Sections 31 - 33, 40, 41)
 # =============================================================================
 
+register_northeast_food(NortheastFoodClass(
+    canonical_food_id="AR_MOMO_PORK_STEAMED",
+    canonical_name="Arunachal Steamed Pork Momo",
+    state="Arunachal Pradesh",
+    region_community="Tawang / West Kameng (Monpa)",
+    food_category="Momo",
+    regional_names={"English": "Monpa Steamed Pork Dumpling", "Monpa": "Mog Mog", "Hindi": "अरुणाचल पोर्क मोमो"},
+    alternate_names=["arunachal pork momo", "monpa momo", "tawang momo"],
+    vegetarian=False,
+    meat_type="pork",
+    preparation_style="steamed_cake",
+    visual_features={"shape": "round_pleated_purse_or_half_moon_crescent", "wrapper": "translucent_steamed_white_wheat_skin", "filling_hint": "succulent_minced_pork_and_onions"},
+    key_ingredients=["refined flour (maida) wrapper", "minced pork with onion and ginger", "coriander", "spices", "served with red chilli garlic chutney"],
+    hard_negatives=["AR_MOMO_VEG_STEAMED", "CHINESE_DIM_SUM"],
+    density_g_cm3=0.82,
+    default_serving_weight_g=30.0,
+    nutrition_per_100g={"calories": 215.0, "protein_g": 11.2, "carbs_g": 24.5, "fat_g": 8.2, "fiber_g": 1.0, "sodium_mg": 280.0},
+    hierarchy=NortheastHierarchy(
+        level3_state="Arunachal Pradesh", level4_region_community="Tawang / West Kameng (Monpa)",
+        level5_food_family="Momo", level6_food_type="Momo", level7_variant="Steamed Pork Momo",
+        level8_cooking_method=["steamed"], default_portion="6 pieces (180g)",
+        nutrition_ref_id="ar_momo_pork_steamed"
+    )
+))
+
+register_northeast_food(NortheastFoodClass(
+    canonical_food_id="AR_MOMO_VEG_STEAMED",
+    canonical_name="Arunachal Steamed Vegetable Momo",
+    state="Arunachal Pradesh",
+    region_community="Tawang / West Kameng (Monpa)",
+    food_category="Momo",
+    regional_names={"English": "Monpa Steamed Vegetable Dumpling", "Hindi": "अरुणाचल वेज मोमो"},
+    alternate_names=["arunachal veg momo", "monpa veg momo"],
+    vegetarian=True,
+    meat_type="none",
+    preparation_style="steamed_cake",
+    visual_features={"shape": "round_pleated_purse_dumpling", "wrapper": "steamed_white_dough", "filling_hint": "cabbage_and_carrot_shreds_visible_through_thin_skin"},
+    key_ingredients=["maida wrapper", "finely minced cabbage", "carrots", "onions", "ginger", "garlic", "soy/salt"],
+    hard_negatives=["AR_MOMO_PORK_STEAMED"],
+    density_g_cm3=0.80,
+    default_serving_weight_g=28.0,
+    nutrition_per_100g={"calories": 160.0, "protein_g": 4.8, "carbs_g": 28.0, "fat_g": 3.2, "fiber_g": 2.2, "sodium_mg": 240.0},
+    hierarchy=NortheastHierarchy(
+        level3_state="Arunachal Pradesh", level4_region_community="Tawang / West Kameng (Monpa)",
+        level5_food_family="Momo", level6_food_type="Momo", level7_variant="Steamed Veg Momo",
+        level8_cooking_method=["steamed"], default_portion="6 pieces (170g)",
+        nutrition_ref_id="ar_momo_veg_steamed"
+    )
+))
+
+register_northeast_food(NortheastFoodClass(
+    canonical_food_id="AR_THUKPA_CHICKEN",
+    canonical_name="Arunachal Chicken Thukpa",
+    state="Arunachal Pradesh",
+    region_community="Tawang / West Kameng (Monpa)",
+    food_category="Thukpa",
+    regional_names={"English": "Monpa Chicken Noodle Soup", "Tibetan/Monpa": "Thukpa", "Hindi": "अरुणाचल थुकपा"},
+    alternate_names=["arunachal thukpa", "monpa thukpa", "chicken thukpa"],
+    vegetarian=False,
+    meat_type="chicken",
+    preparation_style="boiled_clear_soup",
+    visual_features={"bowl": "large_steaming_bowl_of_noodle_soup", "contents": ["wheat_noodles_in_clear_seasoned_broth", "shredded_chicken", "julienned_carrots_and_cabbage", "chopped_spring_onions"]},
+    key_ingredients=["wheat egg noodles", "chicken broth and shredded chicken", "cabbage", "carrots", "garlic", "ginger", "spring onions", "chilli oil hint"],
+    hard_negatives=["JAPANESE_RAMEN", "VIETNAMESE_PHO", "CHINESE_CHOWMEIN"],
+    density_g_cm3=0.96,
+    default_serving_weight_g=380.0,
+    nutrition_per_100g={"calories": 95.0, "protein_g": 6.8, "carbs_g": 12.5, "fat_g": 2.2, "fiber_g": 1.2, "sodium_mg": 320.0},
+    hierarchy=NortheastHierarchy(
+        level3_state="Arunachal Pradesh", level4_region_community="Tawang / West Kameng (Monpa)",
+        level5_food_family="Thukpa", level6_food_type="Thukpa", level7_variant="Chicken Thukpa",
+        level8_cooking_method=["boiled_soup"], default_portion="1 large bowl (380g)",
+        nutrition_ref_id="ar_thukpa_chicken"
+    )
+))
+
+register_northeast_food(NortheastFoodClass(
+    canonical_food_id="AR_BREAD_KHURA",
+    canonical_name="Monpa Khura",
+    state="Arunachal Pradesh",
+    region_community="Tawang (Monpa)",
+    food_category="Pitha/Snack",
+    regional_names={"English": "Traditional Monpa Buckwheat Pancake", "Monpa": "Khura", "Hindi": "खुरा"},
+    alternate_names=["khura", "monpa buckwheat pancake", "arunachal khura"],
+    vegetarian=True,
+    preparation_style="pan_roasted",
+    visual_features={"shape": "flat_circular_rustic_pancake", "color": "dark_speckled_buckwheat_grey", "texture": "soft_crepe_like"},
+    key_ingredients=["buckwheat flour (kuttu)", "water", "salt", "butter/oil for pan greasing"],
+    hard_negatives=["WESTERN_PANCAKE", "JH_ROTI_CHILKA"],
+    density_g_cm3=0.78,
+    default_serving_weight_g=70.0,
+    nutrition_per_100g={"calories": 210.0, "protein_g": 6.5, "carbs_g": 40.2, "fat_g": 3.1, "fiber_g": 4.5, "sodium_mg": 180.0},
+    hierarchy=NortheastHierarchy(
+        level3_state="Arunachal Pradesh", level4_region_community="Tawang (Monpa)",
+        level5_food_family="Pitha/Snack", level6_food_type="Khura", level7_variant="Buckwheat Khura",
+        level8_cooking_method=["pan_roasted"], default_portion="2 pieces (140g)",
+        nutrition_ref_id="ar_bread_khura"
+    )
+))
+
+register_northeast_food(NortheastFoodClass(
+    canonical_food_id="AR_STEW_ZAN",
+    canonical_name="Monpa Zan",
+    state="Arunachal Pradesh",
+    region_community="West Kameng / Tawang (Monpa)",
+    food_category="Stew/Soup",
+    regional_names={"English": "Monpa Millet Porridge with Vegetables & Meat", "Monpa": "Zan", "Hindi": "ज़ान"},
+    alternate_names=["zan", "arunachal zan", "monpa porridge"],
+    vegetarian=False,
+    meat_type="pork",
+    preparation_style="boiled_clear_soup",
+    visual_features={"texture": "thick_rustic_millet_porridge", "contents": ["steamed_finger_millet_paste", "vegetables", "meat_bits", "fermented_cheese_chhurpi"]},
+    key_ingredients=["finger millet flour (marua)", "boiled vegetables (peas, carrots)", "dried meat / pork", "fermented cheese chhurpi", "chilli"],
+    hard_negatives=["NL_RICE_GALHO", "MZ_RICE_SAWHCHIAR"],
+    density_g_cm3=0.98,
+    default_serving_weight_g=250.0,
+    nutrition_per_100g={"calories": 115.0, "protein_g": 5.4, "carbs_g": 18.5, "fat_g": 2.8, "fiber_g": 3.0, "sodium_mg": 210.0},
+    hierarchy=NortheastHierarchy(
+        level3_state="Arunachal Pradesh", level4_region_community="West Kameng / Tawang (Monpa)",
+        level5_food_family="Stew/Soup", level6_food_type="Zan", level7_variant="Traditional Zan Porridge",
+        level8_cooking_method=["boiled", "porridge"], default_portion="1 bowl (250g)",
+        nutrition_ref_id="ar_stew_zan"
+    )
+))
+
+register_northeast_food(NortheastFoodClass(
+    canonical_food_id="AR_BAMBOO_EKUNG_PORK",
+    canonical_name="Arunachal Pork with Ekung",
+    state="Arunachal Pradesh",
+    region_community="East Siang / Lower Subansiri (Adi / Apatani)",
+    food_category="Meat",
+    regional_names={"English": "Pork Cooked with Fermented Bamboo Shoot", "Adi": "Ekung Pork", "Hindi": "अरुणाचल एकुंग पोर्क"},
+    alternate_names=["ekung pork", "arunachal pork bamboo shoot", "adi pork ekung"],
+    vegetarian=False,
+    meat_type="pork",
+    preparation_style="stewed_gravy",
+    visual_features={"meat": "tender_pork_chunks_with_fat_rind", "bamboo": "pale_shredded_fermented_bamboo_shoot (ekung)", "gravy": "herb_infused_oil_free_simmered_broth"},
+    key_ingredients=["pork chunks", "ekung (fermented bamboo shoot)", "bhoot jolokia chilli", "ginger", "garlic", "wild coriander"],
+    hard_negatives=["NL_MEAT_SMOKED_PORK_AXONE", "AS_MEAT_PORK_KHORISA"],
+    density_g_cm3=1.02,
+    default_serving_weight_g=200.0,
+    nutrition_per_100g={"calories": 240.0, "protein_g": 15.5, "carbs_g": 3.2, "fat_g": 18.5, "fiber_g": 1.8, "sodium_mg": 250.0},
+    hierarchy=NortheastHierarchy(
+        level3_state="Arunachal Pradesh", level4_region_community="East Siang / Lower Subansiri (Adi / Apatani)",
+        level5_food_family="Meat", level6_food_type="Pork Curry", level7_variant="Pork with Ekung",
+        level8_cooking_method=["boiled", "simmered"], default_portion="1 bowl (200g)",
+        nutrition_ref_id="ar_bamboo_ekung_pork"
+    )
+))
+
+register_northeast_food(NortheastFoodClass(
+    canonical_food_id="AR_FERMENTED_CHHURPI_SOUP",
+    canonical_name="Monpa Chhurpi Soup",
+    state="Arunachal Pradesh",
+    region_community="Tawang (Monpa)",
+    food_category="Fermented",
+    regional_names={"English": "Fermented Yak Cheese & Herb Soup", "Monpa": "Chhurpi Soup", "Hindi": "छुरपी सूप"},
+    alternate_names=["chhurpi soup", "arunachal chhurpi soup", "monpa yak cheese soup"],
+    vegetarian=True,
+    preparation_style="boiled_clear_soup",
+    visual_features={"texture": "cloudy_pale_broth_with_melted_crumbled_yak_cheese", "visible": ["ginger_slivers", "chilli_flakes", "coriander"]},
+    key_ingredients=["chhurpi (traditional fermented yak milk cheese)", "ginger", "garlic", "green chillies", "salt", "broth"],
+    hard_negatives=["SK_STEW_GUNDRUK", "CHEDDAR_CHEESE_SOUP"],
+    density_g_cm3=0.98,
+    default_serving_weight_g=180.0,
+    nutrition_per_100g={"calories": 92.0, "protein_g": 6.8, "carbs_g": 3.5, "fat_g": 5.8, "fiber_g": 0.5, "sodium_mg": 280.0},
+    hierarchy=NortheastHierarchy(
+        level3_state="Arunachal Pradesh", level4_region_community="Tawang (Monpa)",
+        level5_food_family="Fermented", level6_food_type="Chhurpi Soup", level7_variant="Traditional Chhurpi Soup",
+        level8_cooking_method=["boiled"], default_portion="1 bowl (180g)",
+        nutrition_ref_id="ar_fermented_chhurpi_soup"
+    )
+))
+
+register_northeast_food(NortheastFoodClass(
+    canonical_food_id="AR_THALI_ARUNACHAL",
+    canonical_name="Arunachal Tribal Platter",
+    state="Arunachal Pradesh",
+    region_community="Arunachal Pradesh",
+    food_category="Thali",
+    regional_names={"English": "Traditional Arunachal Tribal Meal Platter", "Hindi": "अरुणाचल थाली"},
+    alternate_names=["arunachal thali", "arunachal meal"],
+    vegetarian=False,
+    meat_type="pork",
+    preparation_style="thali_multi_course",
+    visual_features={"layout": "plain_steamed_rice_with_pork_ekung_boiled_wild_greens_chhurpi_and_khura"},
+    key_ingredients=["steamed rice", "pork with ekung", "boiled wild greens", "khura buckwheat flatbread", "chhurpi soup"],
+    density_g_cm3=0.90,
+    default_serving_weight_g=620.0,
+    nutrition_per_100g={"calories": 165.0, "protein_g": 8.0, "carbs_g": 21.5, "fat_g": 5.8, "fiber_g": 2.4, "sodium_mg": 260.0},
+    hierarchy=NortheastHierarchy(
+        level3_state="Arunachal Pradesh", level4_region_community="Arunachal Pradesh",
+        level5_food_family="Thali", level6_food_type="Thali Platter", level7_variant="Arunachal Tribal Meal",
+        level8_cooking_method=["composite_service"], default_portion="1 full meal (620g)",
+        nutrition_ref_id="ar_thali_arunachal"
+    )
+))
+
+# Cross-State Momo & Thukpa Classes (NE_*)
 register_northeast_food(NortheastFoodClass(
     canonical_food_id="NE_MOMO_PORK_STEAMED",
     canonical_name="Steamed Pork Momo",

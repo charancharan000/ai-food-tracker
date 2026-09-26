@@ -351,8 +351,180 @@ class SikkimMealDecomposer:
         )
 
 # =============================================================================
-# 6. PACKAGING & SERVING WARE FILTER (Section 57)
+# 6. MANIPURI REGIONAL MEAL DECOMPOSER (Section 54, 73)
 # =============================================================================
+
+
+class ManipuriMealDecomposer:
+    @staticmethod
+    def decompose(meta: Optional[Dict[str, Any]] = None) -> NortheastCompositeDecompositionResult:
+        items: List[DecomposedNortheastItem] = [
+            DecomposedNortheastItem(
+                item_index=1, canonical_food_id="MN_RICE_STEAMED",
+                name="Steamed Rice", variant="Meitei Steamed White Rice", category="Rice",
+                estimated_weight_g=180.0, calories=234.0, protein_g=4.9, carbs_g=50.8, fat_g=0.5, fiber_g=0.7, confidence=0.96
+            ),
+            DecomposedNortheastItem(
+                item_index=2, canonical_food_id="MN_STEW_KANGSHOI",
+                name="Kangshoi", variant="Oil-Free Boiled Vegetable & Fish Broth", category="Stew/Soup",
+                estimated_weight_g=150.0, calories=65.0, protein_g=4.5, carbs_g=8.2, fat_g=1.2, fiber_g=2.8, confidence=0.95
+            ),
+            DecomposedNortheastItem(
+                item_index=3, canonical_food_id="MN_CHUTNEY_EROMBA",
+                name="Eromba", variant="Mashed Potato & Vegetable with Roasted Ngari Fish", category="Chutney/Salad",
+                estimated_weight_g=70.0, calories=65.0, protein_g=3.2, carbs_g=11.5, fat_g=0.8, fiber_g=1.6, confidence=0.96
+            ),
+            DecomposedNortheastItem(
+                item_index=4, canonical_food_id="MN_SALAD_SINGJU",
+                name="Singju", variant="Shredded Vegetable Herb Salad with Roasted Gram & Ngari", category="Chutney/Salad",
+                estimated_weight_g=60.0, calories=55.0, protein_g=2.8, carbs_g=7.5, fat_g=1.5, fiber_g=2.4, confidence=0.94
+            )
+        ]
+
+        tot_w = sum(it.estimated_weight_g for it in items)
+        tot_c = sum(it.calories for it in items)
+        tot_p = sum(it.protein_g for it in items)
+        tot_cb = sum(it.carbs_g for it in items)
+        tot_f = sum(it.fat_g for it in items)
+        tot_fib = sum(it.fiber_g for it in items)
+
+        return NortheastCompositeDecompositionResult(
+            platter_name="Traditional Manipuri Meal (Chakluk)",
+            platter_type="meal_plate",
+            state="Manipur",
+            region_community="Imphal Valley",
+            total_components_detected=len(items),
+            items=items,
+            total_edible_weight_g=round(tot_w, 1),
+            total_calories=round(tot_c, 1),
+            total_protein_g=round(tot_p, 1),
+            total_carbs_g=round(tot_cb, 1),
+            total_fat_g=round(tot_f, 1),
+            total_fiber_g=round(tot_fib, 1),
+            deconstruction_rules_enforced=[
+                "Section 54: Decomposed Manipuri meal into Steamed Rice, Kangshoi broth, Eromba mash, and Singju salad."
+            ]
+        )
+
+# =============================================================================
+# 7. MIZO REGIONAL MEAL DECOMPOSER (Section 54, 73)
+# =============================================================================
+
+class MizoMealDecomposer:
+    @staticmethod
+    def decompose(meta: Optional[Dict[str, Any]] = None) -> NortheastCompositeDecompositionResult:
+        items: List[DecomposedNortheastItem] = [
+            DecomposedNortheastItem(
+                item_index=1, canonical_food_id="MZ_RICE_STEAMED",
+                name="Steamed Rice", variant="Mizo Steamed Plain Rice", category="Rice",
+                estimated_weight_g=180.0, calories=234.0, protein_g=4.9, carbs_g=50.8, fat_g=0.5, fiber_g=0.7, confidence=0.96
+            ),
+            DecomposedNortheastItem(
+                item_index=2, canonical_food_id="MZ_STEW_BAI",
+                name="Bai", variant="Boiled Vegetables & Bamboo Shoot Stew", category="Stew/Soup",
+                estimated_weight_g=150.0, calories=78.0, protein_g=3.6, carbs_g=10.2, fat_g=2.2, fiber_g=3.9, confidence=0.95
+            ),
+            DecomposedNortheastItem(
+                item_index=3, canonical_food_id="MZ_MEAT_VAWKSA_REP",
+                name="Vawksa Rep", variant="Smoked Pork with Mustard Greens", category="Meat",
+                is_countable=True, count=3, estimated_weight_g=120.0, calories=312.0, protein_g=18.5, carbs_g=2.8, fat_g=25.2, fiber_g=1.2, confidence=0.94
+            ),
+            DecomposedNortheastItem(
+                item_index=4, canonical_food_id="MZ_CHUTNEY_CHILLI",
+                name="Mizo Chilli Chutney", variant="Crushed Raw Bird's Eye Chilli with Garlic", category="Chutney/Salad",
+                estimated_weight_g=20.0, calories=15.0, protein_g=0.4, carbs_g=2.8, fat_g=0.2, fiber_g=0.6, confidence=0.96
+            )
+        ]
+
+        tot_w = sum(it.estimated_weight_g for it in items)
+        tot_c = sum(it.calories for it in items)
+        tot_p = sum(it.protein_g for it in items)
+        tot_cb = sum(it.carbs_g for it in items)
+        tot_f = sum(it.fat_g for it in items)
+        tot_fib = sum(it.fiber_g for it in items)
+
+        return NortheastCompositeDecompositionResult(
+            platter_name="Traditional Mizo Meal",
+            platter_type="meal_plate",
+            state="Mizoram",
+            region_community="Aizawl",
+            total_components_detected=len(items),
+            items=items,
+            total_edible_weight_g=round(tot_w, 1),
+            total_calories=round(tot_c, 1),
+            total_protein_g=round(tot_p, 1),
+            total_carbs_g=round(tot_cb, 1),
+            total_fat_g=round(tot_f, 1),
+            total_fiber_g=round(tot_fib, 1),
+            deconstruction_rules_enforced=[
+                "Section 54: Decomposed Mizo meal into Rice, Boiled Vegetable Bai, Smoked Pork (Vawksa Rep), and Chilli Chutney."
+            ]
+        )
+
+# =============================================================================
+# 8. ARUNACHAL TRIBAL MEAL DECOMPOSER (Section 54, 73)
+# =============================================================================
+
+class ArunachalMealDecomposer:
+    @staticmethod
+    def decompose(meta: Optional[Dict[str, Any]] = None) -> NortheastCompositeDecompositionResult:
+        items: List[DecomposedNortheastItem] = [
+            DecomposedNortheastItem(
+                item_index=1, canonical_food_id="AR_RICE_STEAMED",
+                name="Steamed Rice", variant="Tribal Steamed Rice", category="Rice",
+                estimated_weight_g=180.0, calories=234.0, protein_g=4.9, carbs_g=50.8, fat_g=0.5, fiber_g=0.7, confidence=0.96
+            ),
+            DecomposedNortheastItem(
+                item_index=2, canonical_food_id="AR_BAMBOO_EKUNG_PORK",
+                name="Pork with Ekung", variant="Tender Pork with Fermented Bamboo Shoot", category="Meat",
+                is_countable=True, count=3, estimated_weight_g=140.0, calories=336.0, protein_g=21.7, carbs_g=4.5, fat_g=25.9, fiber_g=2.5, confidence=0.94
+            ),
+            DecomposedNortheastItem(
+                item_index=3, canonical_food_id="AR_BREAD_KHURA",
+                name="Monpa Khura", variant="Buckwheat Pancake Flatbread", category="Pitha/Snack",
+                is_countable=True, count=1, estimated_weight_g=70.0, calories=147.0, protein_g=4.5, carbs_g=28.1, fat_g=2.2, fiber_g=3.1, confidence=0.95
+            ),
+            DecomposedNortheastItem(
+                item_index=4, canonical_food_id="AR_FERMENTED_CHHURPI_SOUP",
+                name="Chhurpi Soup", variant="Fermented Yak Cheese Herbal Broth", category="Fermented",
+                estimated_weight_g=120.0, calories=110.4, protein_g=8.2, carbs_g=4.2, fat_g=7.0, fiber_g=0.6, confidence=0.93
+            ),
+            DecomposedNortheastItem(
+                item_index=5, canonical_food_id="AR_BOILED_GREENS",
+                name="Boiled Wild Greens", variant="Steamed Indigenous Herbs with Ginger", category="Vegetarian",
+                estimated_weight_g=70.0, calories=28.0, protein_g=1.8, carbs_g=4.2, fat_g=0.4, fiber_g=2.5, confidence=0.95
+            )
+        ]
+
+        tot_w = sum(it.estimated_weight_g for it in items)
+        tot_c = sum(it.calories for it in items)
+        tot_p = sum(it.protein_g for it in items)
+        tot_cb = sum(it.carbs_g for it in items)
+        tot_f = sum(it.fat_g for it in items)
+        tot_fib = sum(it.fiber_g for it in items)
+
+        return NortheastCompositeDecompositionResult(
+            platter_name="Traditional Arunachal Tribal Platter",
+            platter_type="thali",
+            state="Arunachal Pradesh",
+            region_community="Tawang / West Kameng",
+            total_components_detected=len(items),
+            items=items,
+            total_edible_weight_g=round(tot_w, 1),
+            total_calories=round(tot_c, 1),
+            total_protein_g=round(tot_p, 1),
+            total_carbs_g=round(tot_cb, 1),
+            total_fat_g=round(tot_f, 1),
+            total_fiber_g=round(tot_fib, 1),
+            deconstruction_rules_enforced=[
+                "Section 54: Decomposed Arunachal tribal meal into Rice, Pork with Ekung, Monpa Khura, Chhurpi Soup, and Wild Greens."
+            ]
+        )
+
+# =============================================================================
+# 9. PACKAGING & SERVING WARE FILTER (Section 57)
+# =============================================================================
+
 
 class NortheastPackagingFilter:
     """

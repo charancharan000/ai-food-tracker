@@ -119,10 +119,16 @@ from app.food_ai.datasets.northeast_indian_composite_decomposer import (
     NagaPlatterDecomposer,
     TripuriMuiBorokDecomposer,
     SikkimMealDecomposer,
+    ManipuriMealDecomposer,
+    MizoMealDecomposer,
+    ArunachalMealDecomposer,
     NortheastCompositeDecompositionResult
 )
 from app.food_ai.nutrition_engine.northeast_indian_recipes import (
     NortheastRecipeNutritionCalculator,
+    Section74SingleFoodJSON,
+    Section78UnknownFoodOutput,
+    Section82ModelOutput,
     Section86ModelOutput
 )
 from app.food_ai.taxonomy.street_food_master_taxonomy import (
@@ -1043,6 +1049,64 @@ class ProductionInferenceOrchestrator:
         Decomposes a Traditional Sikkim Meal into Rice, Gundruk Jhol, Phagshapa, Kinema, and Sel Roti.
         """
         return SikkimMealDecomposer.decompose(meta)
+
+    def analyze_manipuri_meal(self, meta: Optional[Dict[str, Any]] = None) -> NortheastCompositeDecompositionResult:
+        """
+        Decomposes a Traditional Manipuri Meal (Chakluk) into Rice, Kangshoi, Eromba, and Singju per Section 54.
+        """
+        return ManipuriMealDecomposer.decompose(meta)
+
+    def analyze_mizo_meal(self, meta: Optional[Dict[str, Any]] = None) -> NortheastCompositeDecompositionResult:
+        """
+        Decomposes a Traditional Mizo Meal into Rice, Boiled Vegetable Bai, Smoked Pork (Vawksa Rep), and Chilli Chutney per Section 54.
+        """
+        return MizoMealDecomposer.decompose(meta)
+
+    def analyze_arunachal_meal(self, meta: Optional[Dict[str, Any]] = None) -> NortheastCompositeDecompositionResult:
+        """
+        Decomposes a Traditional Arunachal Tribal Meal into Rice, Pork with Ekung, Monpa Khura, Chhurpi Soup, and Wild Greens per Section 54.
+        """
+        return ArunachalMealDecomposer.decompose(meta)
+
+    def generate_northeast_section_74_single_food(
+        self,
+        food_identifier: str,
+        count: int = 8,
+        cooking_method: str = "steamed"
+    ) -> Section74SingleFoodJSON:
+        """
+        Generates Section 74 compliant Single Food Output JSON.
+        """
+        return NortheastRecipeNutritionCalculator.generate_section_74_single_food(
+            food_identifier=food_identifier,
+            count=count,
+            cooking_method=cooking_method
+        )
+
+    def generate_northeast_section_82_multi_food(
+        self,
+        meal_region: str = "Northeast India",
+        items_spec: Optional[List[Dict[str, Any]]] = None
+    ) -> Section82ModelOutput:
+        """
+        Generates Section 82 compliant Final Multi-Food Model Output Example.
+        """
+        return NortheastRecipeNutritionCalculator.generate_section_82_multi_food(
+            meal_region=meal_region,
+            items_spec=items_spec
+        )
+
+    def generate_northeast_section_78_unknown_fallback(
+        self,
+        confidence: float = 0.24
+    ) -> Section78UnknownFoodOutput:
+        """
+        Generates Section 78 compliant Unknown Food Fallback Output.
+        """
+        return NortheastRecipeNutritionCalculator.generate_section_78_unknown_fallback(
+            confidence=confidence
+        )
+
 
     # =========================================================================
     # PART 8 — INDIAN STREET FOOD MASTER ORCHESTRATION METHODS

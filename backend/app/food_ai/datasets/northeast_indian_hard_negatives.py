@@ -208,9 +208,10 @@ class NortheastRiceMeatDiscriminator:
     def classify(cues: Dict[str, Any]) -> Dict[str, Any]:
         has_abundant_greens = cues.get("has_leafy_greens", False)
         has_axone_aroma = cues.get("has_axone", False)
-        is_soupy_porridge = cues.get("is_soupy_porridge", False)
-        is_dry_pilaf = cues.get("is_dry_pilaf", False)
-        has_pork_fat = cues.get("has_pork_fat", False)
+        is_soupy_porridge = cues.get("is_soupy_porridge", False) or "porridge" in str(cues.get("consistency", "")).lower()
+        is_dry_pilaf = cues.get("is_dry_pilaf", False) or "pilaf" in str(cues.get("consistency", "")).lower()
+        has_pork_fat = cues.get("has_pork_fat", False) or "pork_fat" in str(cues.get("cooking_fat", "")).lower()
+        is_short_bold = "short" in str(cues.get("grain_type", "")).lower() or "bold" in str(cues.get("grain_type", "")).lower()
         has_creamy_shredded_meat = cues.get("has_creamy_shredded_meat", False)
 
         if is_soupy_porridge and (has_abundant_greens or has_axone_aroma):
@@ -231,7 +232,7 @@ class NortheastRiceMeatDiscriminator:
                 "notes": "Pale creamy meat and rice porridge matching Mizo Sawhchiar."
             }
 
-        if is_dry_pilaf or has_pork_fat:
+        if is_dry_pilaf or has_pork_fat or is_short_bold:
             return {
                 "dish_name": "Jadoh",
                 "canonical_id": "ML_RICE_JADOH_PORK",
@@ -239,6 +240,7 @@ class NortheastRiceMeatDiscriminator:
                 "confidence": 0.95,
                 "notes": "Dry short-grain rice cooked in meat broth and pork fat matching Khasi Jadoh."
             }
+
 
         return {
             "dish_name": "Northeast Rice Preparation",
@@ -375,5 +377,57 @@ class SmokedMeatVerifier:
         return {"is_smoked": False, "category": "cooked_meat_uncertain", "confidence": 0.55}
 
 
-def disambiguate_northeast_pair(confusion_id: str) -> Optional[NortheastConfusionPair]:
-    return NORTHEAST_CONFUSION_REGISTRY.get(confusion_id)
+def disambiguate_northeast_pair(
+    pair_id: Optional[str] = None,
+    confusion_id: Optional[str] = None,
+    visual_features: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
+    cid = pair_id or confusion_id or ""
+    pair = NORTHEAST_CONFUSION_REGISTRY.get(cid)
+    if not pair:
+        return {
+            "resolved": False,
+            "error": f"Unknown confusion id: {cid}"
+        }
+
+    cues = visual_features or {}
+    # Use specialized classifiers based on target class
+    if "JADOH" in pair.target_class_id or "GALHO" in pair.target_class_id or "PULAO" in pair.confuser_class_id:
+        res = NortheastRiceMeatDiscriminator.classify(cues)
+        return {
+            "resolved": True,
+            "selected_class_id": res["canonical_id"],
+            "selected_name": res["dish_name"],
+            "confidence": res["confidence"],
+            "resolution_notes": res["notes"]
+        }
+
+    if "AXONE" in pair.target_class_id or "TUNGRYMBAI" in pair.confuser_class_id:
+        res = FermentedSoybeanDiscriminator.classify(cues)
+        return {
+            "resolved": True,
+            "selected_class_id": res["canonical_id"],
+            "selected_name": res["dish_name"],
+            "confidence": res["confidence"],
+            "resolution_notes": res["notes"]
+        }
+
+    if "PITIKA" in pair.target_class_id or "EROMBA" in pair.confuser_class_id:
+        res = MashedVegetableChutneyDiscriminator.classify(cues)
+        return {
+            "resolved": True,
+            "selected_class_id": res["canonical_id"],
+            "selected_name": res["dish_name"],
+            "confidence": res["confidence"],
+            "resolution_notes": res["notes"]
+        }
+
+    # Default fallback to pair target
+    return {
+        "resolved": True,
+        "selected_class_id": pair.target_class_id,
+        "selected_name": pair.target_name,
+        "confidence": 0.90,
+        "resolution_notes": pair.disambiguation_rule
+    }
+
